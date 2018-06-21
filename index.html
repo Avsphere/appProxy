@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="lib/bootstrap.min.css">
+    <link rel="stylesheet" href="lib/style.css">
+    <title>Testing XML to js</title>
+  </head>
+
+  <body>
+
+    <!-- Begin page content -->
+    <main role="main" class="container">
+      <div class="modal" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Modal title</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p id="modalBody">
+
+              </p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h1 class="mt-5" id="serverName">Title</h1>
+      <h5 id="iisVersion"> IIS : 3.4</h5>
+      <h5 id="osInfo"> OS : Windows Data server</h5>
+      <br>
+      <br>
+      <div class="container">
+        <div class="row">
+          <div class="col-sm">
+            <div id="siteTable">
+              <h2>Site View</h2>
+              <p>Click on an element for a closer look!</p>
+
+            </div>
+          </div>
+          <div class="col-sm">
+            <div style="margin-left:2%">
+              <h2>Detailed View</h2>
+              <p> Click a configuration setting for remediation tips </p>
+              <hr>
+              <div class="list-group" id="detailedView">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+
+      </div>
+    </footer>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/bootstrap.min.js"></script>
+    <script src="./configDiscoveryData.js"></script>
+    <script src="./configApi.js"></script>
+    <script src="./analyzer.js"></script>
+    <script src="./viewBuilder.js"></script>
+    <script src="./master.js"></script>
+  </body>
+</html>
