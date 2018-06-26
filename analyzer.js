@@ -51,51 +51,90 @@ class Analyzer {
   windowsAnalysis() {
     let analysisType = "windows"
     function checkAuth( siteOrApp ) {
-      //currently I have a leniance allowing for multiple auths
-      let authenticationName = this.api.getAuthNames( siteOrApp )[0],
-          checks = []
+      let authTypes = this.api.getAuthNames( siteOrApp ),
+          appPool = siteOrApp.appPool,
+          checks = [];
 
-      if ( authenticationName === 'windowsAuthentication') {
+      if ( authTypes.length > 1 ) {
+        checks.push( new ConfigCheck({
+          name : 'Mutliple enabled auths',
+          value : authTypes.toString().replace(/,/g, ', '),
+          status : 'warning',
+          details : 'If for some reason two authentications are enabled if one is anonymous it would default to it'
+        }))
+      }
+      if ( authTypes.includes('windowsAuthentication') ) {
         checks.push( new ConfigCheck({
           name : 'Authentication',
-          value : authenticationName,
+          value : 'windowsAuthentication',
           status : 'correct',
           details : 'None'
         }))
-        let useAppPoolCredentials = siteOrApp.authentication.windowsAuthentication.useAppPoolCredentials;
-        if ( useAppPoolCredentials ) {
+        let useAppPoolCredentials = siteOrApp.authentication.windowsAuthentication.useAppPoolCredentials,
+            useKernelMode = siteOrApp.authentication.windowsAuthentication.useKernelMode;
+        if ( useAppPoolCredentials && appPool.identityType === 'SpecificUser' ) {
           checks.push( new ConfigCheck({
             name : 'useAppPoolCredentials',
             value : useAppPoolCredentials,
             status : 'correct',
             details : 'None'
           }))
-        } else {
+        } else if ( useKernelMode && appPool.identityType === 'ApplicationPoolIdentity' ) {
+            checks.push( new ConfigCheck({
+              name : 'useKernelMode',
+              value : useKernelMode,
+              status : 'correct',
+              details : 'If trying to configure KCD this should be true so that the application pool identity can recieve tickets on behalf of the application'
+            }))
+        } else if ( !useAppPoolCredentials && appPool.identityType === 'SpecificUser' ) {
             checks.push( new ConfigCheck({
               name : 'useAppPoolCredentials',
               value : useAppPoolCredentials,
               status : 'incorrect',
               details : 'If trying to configure KCD this should be true so that the application pool identity can recieve tickets on behalf of the application'
             }))
-        }
+          } else if ( !useKernelMode && appPool.identityType === 'ApplicationPoolIdentity' ) {
+              checks.push( new ConfigCheck({
+                name : 'useKernelMode',
+                value : useKernelMode,
+                status : 'incorrect',
+                details : 'If trying to configure KCD this should be true so that the application pool identity can recieve tickets on behalf of the application'
+              }))
+            }
       } else {
         checks.push( new ConfigCheck({
-          name : 'Authentication',
-          value : authenticationName,
-          status : 'incorrect',
-          details : 'In order to configure SSO via app proxy the authentication method must be windowsIntegrated or if header based using pingAccess the authentication method should be anonymousAuthentication'
+          name : 'Authentication may require additional configuration',
+          value : authTypes.toString().replace(/,/g, ', '),
+          status : 'warning',
+          details : 'This form of authentication is valid but requires additional configuration'
         }))
       }
       return checks;
     }
-    function checkSpns( appPool ) {
-      let spns = appPool.spns,
+    function checkSpnsandPool( siteOrApp ){
+      let appPool = siteOrApp.appPool,
+          spns = appPool.spns,
           checks = [],
           runAdditionalChecks = false,
           checkValue = appPool.username;
+
       if ( appPool.identityType === 'ApplicationPoolIdentity') {
         checkValue = appPool.identityType;
+        checks.push( new ConfigCheck({
+          name : 'Identity Type is ApplicationPoolIdentity',
+          value : checkValue,
+          status : 'warning',
+          details : 'None'
+        }))
+      } else if ( appPool.identityType === 'SpecificUser' ) {
+        checks.push( new ConfigCheck({
+          name : 'Identity Type is SpecificUser',
+          value : checkValue,
+          status : 'correct',
+          details : 'None'
+        }))
       }
+
       if ( spns.length > 0 ) {
         checks.push( new ConfigCheck({
           name : 'Valid SPNs exist for ',
@@ -113,61 +152,23 @@ class Analyzer {
         }))
       }
 
-      //@NOTE This seems like a worthless check
-      if ( runAdditionalChecks && appPool.identityType === 'ApplicationPoolIdentity' || appPool.identityType === 'SpecificUser') {
-        checks.push( new ConfigCheck({
-          name : 'App Pool identity type ',
-          value : appPool.identityType,
-          status : 'correct',
-          details : 'None'
-        }))
-      } else if ( runAdditionalChecks ) {
-        checks.push( new ConfigCheck({
-          name : 'App Pool identity type',
-          value : appPool.identityType,
-          status : 'incorrect',
-          details : 'None'
-        }))
-      }
+      return checks;
+    }
 
-      return checks;
-    }
-    function checkAppPool( siteOrApp ) {
-      let appPool = siteOrApp.appPool,
-          checks = [];
-      if ( appPool.identityType === 'SpecificUser' ) {
-        checks.push( new ConfigCheck({
-          name : 'App Pool Identity Type',
-          value : appPool.identityType,
-          status : 'correct',
-          details : 'None'
-        }))
-        let spnChecks = checkSpns( appPool );
-        checks = checks.concat( spnChecks)
-      } else {
-        checks.push( new ConfigCheck({
-          name : 'App Pool Identity Type',
-          value : appPool.identityType,
-          status : 'incorrect',
-          details : 'None'
-        }))
-      }
-      return checks;
-    }
     let sites = this.api.getSites(),
         analyzedSites = [];
     sites.map( (site) => {
       let analyzedApps = [],
-          siteChecks = checkAuth.bind(this, site)().concat( checkSpns.bind(this, site.appPool)() ),
+          siteChecks = checkAuth.bind(this, site)().concat( checkSpnsandPool.bind(this, site)() ),
           siteApps = this.api.getSiteApps( site.siteName ),
           totalChecks = [];
 
       totalChecks = totalChecks.concat( siteChecks );
       if ( siteApps ) {
         siteApps.forEach( (app) => {
-          let appChecks = checkAuth.bind(this, app)().concat(checkSpns.bind(this, app.appPool)() );
+          let appChecks = checkAuth.bind(this, app)().concat(checkSpnsandPool.bind(this, app)() );
           let readinessScore = this.simpleReadiness( appChecks );
-          totalChecks = totalChecks.concat( appChecks );
+          totalChecks = totalChecks.concat( appChecks )
           analyzedApps.push({
             app : app,
             readinessScore : readinessScore,

@@ -2,9 +2,7 @@ class ConfigApi {
   constructor( rawData ) {
     this.rawData = rawData
   }
-  sayHello() {
-    console.log("Hi lol")
-  }
+
   getSiteNames() {
     return this.rawData.sites.map( (s) => { return s.siteName; })
   }

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="lib/bootstrap.min.css">
     <link rel="stylesheet" href="lib/style.css">
+    <link rel="stylesheet" href="lib/fontAwesome/css/all.css">
     <title>Testing XML to js</title>
   </head>
 
@@ -17,17 +18,16 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Modal title</h5>
+              <h1 class="modal-title">Modal title</h1>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
-              <p id="modalBody">
-
-              </p>
             </div>
             <div class="modal-footer">
+              <button type="button" class="btn btn-info">Generate publish script <i class="fas fa-cloud-upload-alt"></i></button>
+              <button type="button" class="btn btn-primary">Download JSON <i class="fas fa-download"></i></button>
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
           </div>
@@ -49,8 +49,8 @@
           </div>
           <div class="col-sm">
             <div style="margin-left:2%">
-              <h2>Detailed View</h2>
-              <p> Click a configuration setting for remediation tips </p>
+              <h2>Configuration Summary</h2>
+              <p>Click an item for remediation assitance or if the app / site has a 100% readiness score, click for a publication script!</p>
               <hr>
               <div class="list-group" id="detailedView">
               </div>

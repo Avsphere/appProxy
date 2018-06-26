@@ -4,6 +4,11 @@ let configDiscoveryData = {
     "sites":  [
                   {
                       "siteName":  "kerbAuth",
+                      "bindings":  {
+                                       "port":  "80",
+                                       "hostName":  "",
+                                       "address":  "*"
+                                   },
                       "appPool":  {
                                       "username":  "LOLUVW\\avsp-service",
                                       "spns":  [
@@ -28,13 +33,17 @@ let configDiscoveryData = {
                                                "authentication":  {
                                                                       "windowsAuthentication":  {
                                                                                                     "useAppPoolCredentials":  true,
+                                                                                                    "providers":  {
+                                                                                                                      "second":  null,
+                                                                                                                      "first":  "Negotiate"
+                                                                                                                  },
                                                                                                     "useKernelMode":  true
                                                                                                 }
                                                                   }
                                            },
                                            {
                                                "appPool":  {
-                                                               "username":  "NA",
+                                                               "username":  "PSEUDOPREM-IIS",
                                                                "spns":  [
                                                                             "host/pseudoprem-iis",
                                                                             "host/pseudoprem-iis.loluvw.xyz"
@@ -46,19 +55,36 @@ let configDiscoveryData = {
                                                "authentication":  {
                                                                       "basicAuthentication":  {
 
-                                                                                              }
+                                                                                              },
+                                                                      "windowsAuthentication":  {
+                                                                                                    "useAppPoolCredentials":  true,
+                                                                                                    "providers":  {
+                                                                                                                      "second":  null,
+                                                                                                                      "first":  "Negotiate"
+                                                                                                                  },
+                                                                                                    "useKernelMode":  true
+                                                                                                }
                                                                   }
                                            }
                                        ],
                       "authentication":  {
                                              "windowsAuthentication":  {
                                                                            "useAppPoolCredentials":  true,
+                                                                           "providers":  {
+                                                                                             "second":  null,
+                                                                                             "first":  "Negotiate"
+                                                                                         },
                                                                            "useKernelMode":  true
                                                                        }
                                          }
                   },
                   {
                       "siteName":  "nodeDummy",
+                      "bindings":  {
+                                       "port":  "3000",
+                                       "hostName":  "",
+                                       "address":  "*"
+                                   },
                       "appPool":  {
                                       "username":  "LOLUVW\\avsp-service",
                                       "spns":  [
@@ -77,8 +103,13 @@ let configDiscoveryData = {
                   },
                   {
                       "siteName":  "superDummy",
+                      "bindings":  {
+                                       "port":  "8080",
+                                       "hostName":  "superDummylol",
+                                       "address":  "*"
+                                   },
                       "appPool":  {
-                                      "username":  "NA",
+                                      "username":  "PSEUDOPREM-IIS",
                                       "spns":  [
                                                    "host/pseudoprem-iis",
                                                    "host/pseudoprem-iis.loluvw.xyz"
@@ -88,9 +119,17 @@ let configDiscoveryData = {
                                   },
                       "applications":  null,
                       "authentication":  {
-                                             "FormsAuthentication":  {
+                                             "anonymousAuthentication":  {
 
-                                                                     }
+                                                                         },
+                                             "windowsAuthentication":  {
+                                                                           "useAppPoolCredentials":  false,
+                                                                           "providers":  {
+                                                                                             "second":  null,
+                                                                                             "first":  "NTLM"
+                                                                                         },
+                                                                           "useKernelMode":  true
+                                                                       }
                                          }
                   }
               ],
