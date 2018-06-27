@@ -142,7 +142,7 @@ class ViewBuilder {
 
   spawnModal( siteOrApp , type) {
     function siteModalBody() {
-      let site = siteOrApp;
+      let site = siteOrApp.site;
       function buildSpnTable() {
         function createRow( spnNumber, spnValue ) {
           let html = `<tr class='clickable-row'>
@@ -191,6 +191,36 @@ class ViewBuilder {
                         `;
         return html;
       }
+      function buildCheckTable() {
+        function createRow( check ) {
+          let html = '';
+          if ( check.status !== 'correct' ) {
+            html = `<tr class='clickable-row'>
+                          <td>${check.name}</td>
+                          <td>${check.status}</td>
+                          <td>${check.details}</td>
+                        </tr>`
+          }
+          return html;
+        }
+        let checks = siteOrApp.checks;
+        let html = `<table class="table" id="checksTable">
+                        <thead>
+                          <tr>
+                            <th>Check Name</th>
+                            <th>Status</th>
+                            <th>Tip</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                        `;
+        checks.forEach( (check) => {
+          html += createRow( check );
+        })
+
+        html += '</tbody></table>';
+        return html;
+      }
       function buildInfoSection() {
         let html = '<div class="modalInfo">'
         html += '<h3> Info for site </h3>'
@@ -201,19 +231,82 @@ class ViewBuilder {
       let html = buildInfoSection();
       html += buildSpnTable();
       html += buildBindingsTable();
+      html += buildCheckTable();
       return html;
     }
     function appModalBody() {
-      let html = '<h1> Wowowowow </h1>'
+      let app = siteOrApp.app;
+      function buildSpnTable() {
+        function createRow( spnNumber, spnValue ) {
+          let html = `<tr class='clickable-row'>
+                        <td>SPN #${spnNumber}</td>
+                        <td>${spnValue}</td>
+                      </tr>`
+          return html;
+        }
+        let html = `<table class="table" id="spnTable">
+                        <thead>
+                          <tr>
+                            <th>Found SPNs</th>
+                            <th>SPN value</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+        app.appPool.spns.forEach( (spn, i) => {
+          html += createRow(i, spn);
+        })
+        html += `</tbody></table>`
+        return html;
+      }
+      function buildCheckTable() {
+        function createRow( check ) {
+          let html = '';
+          if ( check.status !== 'correct' ) {
+            html = `<tr class='clickable-row'>
+                          <td>${check.name}</td>
+                          <td>${check.status}</td>
+                          <td>${check.details}</td>
+                        </tr>`
+          }
+          return html;
+        }
+        let checks = siteOrApp.checks;
+        let html = `<table class="table" id="checksTable">
+                        <thead>
+                          <tr>
+                            <th>Check Name</th>
+                            <th>Status</th>
+                            <th>Tip</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                        `;
+        checks.forEach( (check) => {
+          html += createRow( check );
+        })
+
+        html += '</tbody></table>';
+        return html;
+      }
+      function buildInfoSection() {
+        let html = '<div class="modalInfo">'
+        html += '<h3> Info for App </h3>'
+        html += '<p> This is important info about App.... </p>'
+        html += '</div>'
+        return html;
+      }
+      let html = buildInfoSection();
+      html += buildSpnTable();
+      html += buildCheckTable();
       return html;
     }
 
     if ( type === 'site' ) {
-      let site = siteOrApp;
+      let site = siteOrApp.site;
       $('.modal-title').text(site.siteName)
       $('.modal-body').html( siteModalBody() )
     } else if ( type === 'app' ) {
-      let app = siteOrApp;
+      let app = siteOrApp.app;
       $('.modal-title').text(app.appName)
       $('.modal-body').html( appModalBody() )
     }
@@ -260,12 +353,12 @@ class ViewBuilder {
           analyzedApps.find( (a) => {
             let currApp = a.app.appName;
             if ( currApp === appName) {
-              siteOrApp = a.app;
+              siteOrApp = a;
               type = 'app';
             }
           })
         } else {
-          siteOrApp = siteContext.site;
+          siteOrApp = siteContext;
           type = 'site'
         }
           that.spawnModal( siteOrApp , type);

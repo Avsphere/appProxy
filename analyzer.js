@@ -124,7 +124,7 @@ class Analyzer {
           name : 'Identity Type is ApplicationPoolIdentity',
           value : checkValue,
           status : 'warning',
-          details : 'None'
+          details : 'Generally one would would find this to be set to SpecificUser'
         }))
       } else if ( appPool.identityType === 'SpecificUser' ) {
         checks.push( new ConfigCheck({
@@ -148,7 +148,7 @@ class Analyzer {
           name : 'SPNs do not exist for',
           value : checkValue,
           status : 'incorrect',
-          details : 'None'
+          details : 'Please create the required SPNs for the appPool identity'
         }))
       }
 
