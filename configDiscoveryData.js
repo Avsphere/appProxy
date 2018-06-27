@@ -32,7 +32,7 @@ let configDiscoveryData = {
                                                "appName":  "test",
                                                "authentication":  {
                                                                       "windowsAuthentication":  {
-                                                                                                    "useAppPoolCredentials":  true,
+                                                                                                    "useAppPoolCredentials":  false,
                                                                                                     "providers":  {
                                                                                                                       "second":  null,
                                                                                                                       "first":  "Negotiate"
