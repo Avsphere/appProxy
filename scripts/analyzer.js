@@ -20,6 +20,7 @@ class Analyzer {
   determineScope( siteOrApp ) {
     let osType = this.api.getOs(),
         scope = {};
+    console.log("OsType", osType);
     if ( osType.includes('Microsoft') ) {
       scope = this.windowsAnalysis.bind(this);
     } else {

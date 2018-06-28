@@ -1,7 +1,6 @@
 class ViewBuilder {
   constructor ( analysis ) {
     this.analysis = analysis;
-    this.buildView();
   }
 
   setBaseInfo(){
@@ -311,13 +310,8 @@ class ViewBuilder {
       $('.modal-body').html( appModalBody() )
     }
 
-  // if ( title && body ) {
-  //   $('.modal-title').text(title);
-  //   $('#modalBody').text(body);
-  // }
-  console.log( siteOrApp, type)
-  $('#detailModal').modal({})
-}
+    $('#detailModal').modal({})
+  }
 
 
 
@@ -373,12 +367,80 @@ class ViewBuilder {
     })
   }
 
-  buildView(){
+  buildView() {
     console.log(this.analysis)
     let htmlTable = this.buildTable( this.analysis.analyzedSites )
     $('#siteTable').append(htmlTable)
     this.setBaseInfo();
     this.handles();
+  }
+
+  buildHeadlessView() {
+    function rebuildBody() {
+      let baseHtml = `<!-- Begin page content -->
+        <main role="main" class="container">
+          <div class="modal" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:800px">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title">Modal title</h1>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-info">Generate publish script <i class="fas fa-cloud-upload-alt"></i></button>
+                  <button type="button" class="btn btn-primary">Download JSON <i class="fas fa-download"></i></button>
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <h1 class="mt-5" id="serverName">Title</h1>
+          <h5 id="iisVersion"> IIS : 3.4</h5>
+          <h5 id="osInfo"> OS : Windows Data server</h5>
+          <br>
+          <br>
+          <div class="container">
+            <div class="row">
+              <div class="col-sm">
+                <div id="siteTable">
+                  <h2>Site View</h2>
+                  <p>Click on an element for a closer look!</p>
+
+                </div>
+              </div>
+              <div class="col-sm">
+                <div style="margin-left:2%">
+                  <h2>Configuration Summary</h2>
+                  <p>Click an item for remediation assitance or if the app / site has a 100% readiness score, click for a publication script!</p>
+                  <hr>
+                  <div class="list-group" id="detailedView">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </main>
+
+        <footer class="footer">
+          <div class="container">
+
+          </div>
+        </footer>`
+
+        $('#headlessContainer').html( baseHtml )
+    }
+
+    rebuildBody()
+    let htmlTable = this.buildTable( this.analysis.analyzedSites )
+    $('#siteTable').append(htmlTable)
+    this.setBaseInfo();
+    this.handles();
+
   }
 
 
