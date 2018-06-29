@@ -15,6 +15,7 @@ class ViewBuilder {
       let readinessScore = site.readinessScore.toPrecision(3),
           appCount = site.analyzedApps.length;
       let html = `<tr class='clickable-row'>
+                    <td class="arrow-icon"> <i class="fa fa-caret-down" aria-hidden="true"></i></i> </td>
                     <td class="siteName">${site.siteName}</td>
                     <td>${readinessScore}</td>
                     <td>${appCount}</td>
@@ -24,6 +25,7 @@ class ViewBuilder {
     let html = `<table class="table table">
                     <thead>
                       <tr>
+                        <th> </th>
                         <th>Site Name</th>
                         <th>Readiness (%) </th>
                         <th>Nested Applications</th>
@@ -77,7 +79,7 @@ class ViewBuilder {
       clickedSite.analyzedApps.forEach( (app) => {
         let appData = app.app,
             readinessScore = app.readinessScore.toPrecision(3);
-        html += `<div class="appSection" data-appName="${appData.appName}"> <h3 class="sectionHeader">App: ${appData.appName} <span style="float:right"> Readiness Score: ${readinessScore}</span></h3>`;
+        html += `<div class="appSection" data-appName="${appData.appName}"> <h5 class="sectionHeader">App: ${appData.appName} <span style="float:right"> Readiness Score: ${readinessScore}</span></h5>`;
         that.orderChecks(app.checks);
         app.checks.forEach( (check) => {
           html += buildListItem(check);
@@ -320,22 +322,7 @@ class ViewBuilder {
 
   handles() {
     let that = this;
-    function setDetailedItemsHandle2( analyzedSite ) {
-      $('.detailedItem').on('click', (el) => {
-        that.modalTesting( el, analyzedSite );
-      })
-    }
-    function setDetailedItemsHandle3() {
-      $('.detailedItem').on('click', (el) => {
-        let modalTitle = $(el.target).text(),
-            modalBody = $(el.target).attr('data-details');
-        //making the checkmark or Xmark spaced differently
-        modalTitle = modalTitle.substring(0, modalTitle.length-1) + '  ' + modalTitle[modalTitle.length-1];
-        let parent = $(el.target).parent();
-        console.log("parent:", parent);
-        that.spawnModal( modalTitle, modalBody );
-      })
-    }
+
     function setDetailedItemsHandle(){
       $('.detailedItem').on('click', (el) => {
         let parent = $(el.target).parent(),
@@ -358,9 +345,33 @@ class ViewBuilder {
           that.spawnModal( siteOrApp , type);
       })
     }
+    function toggleRow( clickedRow ) {
+      //first reset current selection
+      let tableRows = $('#siteTable').find('tr').toArray(),
+          iconCol = $(clickedRow).find('.arrow-icon');
+      tableRows.forEach( (row) => {
+        if ( $(row).hasClass('table-primary') ) {
+          let iconCol = $(row).find('.arrow-icon');
+          iconCol.html('<i class="fa fa-caret-down" aria-hidden="true"></i>')
+          $(row).removeClass('table-primary')
+        }
+      })
+
+      $(clickedRow).addClass('table-primary');
+      $(iconCol).html('<i class="fa fa-caret-right" aria-hidden="true"></i>')
+
+
+
+
+
+    }
+
     $('.clickable-row').on('click', (el) => {
-      let siteName = $(el.target).parent().find('.siteName').text();
-      let analyzedSite = this.findSite( siteName );
+      let clickedRow = $(el.target).parent(),
+          siteName = clickedRow.find('.siteName').text(),
+          analyzedSite = this.findSite( siteName );
+      console.log("Cl", clickedRow)
+      toggleRow( clickedRow )
       $('#detailedView').html( this.buildSummaryView( analyzedSite ) );
       $('#detailedView').data('data', analyzedSite);
       setDetailedItemsHandle( analyzedSite );

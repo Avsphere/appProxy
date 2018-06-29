@@ -42,3 +42,21 @@ tr.clickable-row {
   margin-top: 2%;
   margin-bottom: 2%;
 }
+.pageTitle {
+  color:white;
+}
+.logoImage {
+  max-width: 100px;
+}
+
+.bigHeader {
+  min-height: 15rem;
+  background-color: #0067b8;
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.05), inset 0 -1px 0 rgba(0,0,0,.1);
+}
+
+.bd-navbar {
+  min-height: 5rem;
+  background-color: black;
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.05), inset 0 -1px 0 rgba(0,0,0,.1);
+}
