@@ -21,7 +21,7 @@ class ViewBuilder {
                   </tr>`
       return html;
     }
-    let html = `<table class="table">
+    let html = `<table class="table table">
                     <thead>
                       <tr>
                         <th>Site Name</th>
