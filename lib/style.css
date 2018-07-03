@@ -44,6 +44,11 @@ tr.clickable-row {
 }
 .pageTitle {
   color:white;
+  margin-left: 2rem;
+  margin-top: .5rem;
+}
+.pageTitle h4 {
+  font-size: 21px;
 }
 .logoImage {
   max-width: 100px;
@@ -56,7 +61,7 @@ tr.clickable-row {
 }
 
 .bd-navbar {
-  min-height: 5rem;
-  background-color: black;
+  min-height: 2.5rem;
+  background-color: #2e70ba;
   box-shadow: 0 0.5rem 1rem rgba(0,0,0,.05), inset 0 -1px 0 rgba(0,0,0,.1);
 }
