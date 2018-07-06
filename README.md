@@ -4,6 +4,8 @@ This is a tool to help with the app proxy publication process. It is intended to
 
 ## Current State
 
+[Hosted Example]( https://avsphere.github.io/appProxy/)
+
 7/3/2018 -- This is still an early prototype -- please send any feedback / bugs to t-aaperr@microsoft.com
 
 Currently the script is not in a production form, the javascript has also not been generalized so this will probably not work on old versions of internet explorer.

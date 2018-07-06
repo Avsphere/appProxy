@@ -114,13 +114,12 @@ class ViewBuilder {
     return found;
   }
   buildTutorial() {
-    console.log("building tutorial")
     let html = `<div style="margin-left: 20%;">
                   <h3> About This Tool</h3>
                   <p> Click a site to reveal its configuration settings in the context of Application Proxy</p>
                 <p>Use the readiness score to quickly gauge what sites or apps need the most work.</p>
 
-                <p>This score should be seen as a heuristic as it simply looks at the ratio of correct configuration checks vs incorrect / warning </p>
+                <p>This score should be seen as a heuristic as it simply looks at the ratio of correct configuration checks vs the incorrect / warning configuration checks</p>
 
                 </div>`
     return html;
