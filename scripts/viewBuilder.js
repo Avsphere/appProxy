@@ -11,13 +11,26 @@ class ViewBuilder {
 
   buildTable() {
     let that = this;
+    function determineProgressColor( score ) {
+      if ( score < 50 ) { return 'bg-danger'; }
+      else if ( score < 70 ) { return 'bg-warning'; }
+      else if ( score < 90 ) { return 'bg-success'; }
+      else { return ''; }
+    }
     function createRow( site ) {
       let readinessScore = site.readinessScore.toPrecision(3),
           appCount = site.analyzedApps.length;
+      let progressColor = determineProgressColor( readinessScore );
+      let progressHtml = `
+      <div class="progress">
+        <div class="progress-bar ${progressColor} progress-bar-striped" role="progressbar" aria-valuenow="${readinessScore}%" aria-valuemin="0" aria-valuemax="100" style="width:${readinessScore}%">
+          ${readinessScore}
+        </div>
+      </div>`
       let html = `<tr class='clickable-row'>
                     <td class="arrow-icon"> <i class="fa fa-caret-down" aria-hidden="true"></i></i> </td>
                     <td class="siteName">${site.siteName}</td>
-                    <td>${readinessScore}</td>
+                    <td>${progressHtml}</td>
                     <td>${appCount}</td>
                   </tr>`
       return html;
@@ -32,25 +45,25 @@ class ViewBuilder {
                       </tr>
                     </thead>
                     <tbody>`;
-    this.analysis.analyzedSites.forEach( (site) => {
+
+    this.analysis.analyzedSites
+    .sort( (a,b) => {
+      return b.readinessScore - a.readinessScore
+    })
+    .forEach( (site) => {
       html += createRow(site);
     })
     html += `</tbody></table>`
     return html;
   }
-
-
-
   orderChecks( checks ) {
     let c = checks.sort( (a,b) => {
       if ( a.status === b.status ) { return 0; }
       else if ( a.status === 'correct' ) { return -1; }
       else if ( a.status === 'warning' && b.status === 'incorrect' ) { return -1; }
       else { return 1; }
-
     })
   }
-
   buildSummaryView( clickedSite ) {
     let that = this;
     function buildListItem( check ) {
@@ -58,7 +71,7 @@ class ViewBuilder {
       if ( check.status === 'correct' ) {
         html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${check.name} : ${check.value}<span class="badge badge-primary badge-pill">✓</span></a>`
       } else if ( check.status === 'warning' ) {
-          html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${check.name} : ${check.value}<span class="badge badge-warning badge-pill">Warning!</span></a>`
+          html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${check.name} : ${check.value}<span class="badge badge-warning badge-pill">Warning</span></a>`
       } else {
           html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${check.name} : ${check.value}<span class="badge badge-danger badge-pill">X</span></a>`
       }
@@ -92,7 +105,6 @@ class ViewBuilder {
     html += buildAppsSection();
     return html;
   }
-
   findSite( siteName ) {
     let found = this.analysis.analyzedSites.find( (a) => {
       if ( a.siteName === siteName ) {
@@ -101,46 +113,18 @@ class ViewBuilder {
     })
     return found;
   }
+  buildTutorial() {
+    console.log("building tutorial")
+    let html = `<div style="margin-left: 20%;">
+                  <h3> About This Tool</h3>
+                  <p> Click a site to reveal its configuration settings in the context of Application Proxy</p>
+                <p>Use the readiness score to quickly gauge what sites or apps need the most work.</p>
 
-  populateModal( analyzedSite ) {
-    let that = this;
-    function setHeader() {
+                <p>This score should be seen as a heuristic as it simply looks at the ratio of correct configuration checks vs incorrect / warning </p>
 
-    }
-    function buildSpnTable( siteOrApp ) {
-      function createRow( spnCount, spnValue ) {
-        let html = `<tr class='clickable-row'>
-                      <td>SPN: ${spnCount}</td>
-                      <td>spnValue</td>
-                    </tr>`
-        return html;
-      }
-      let html = `<table class="table" id="spnTable">
-                      <thead>
-                        <tr>
-                          <th>Found SPNs</th>
-                          <th>SPN value</th>
-                        </tr>
-                      </thead>
-                      <tbody>`;
-      this.analysis.analyzedSites.forEach( (site) => {
-        html += createRow(site);
-      })
-      html += `</tbody></table>`
-      return html;
-    }
-    function infoSection() {
-      let html = ''
-    }
-
-    $('#detailModal').modal({})
+                </div>`
+    return html;
   }
-
-  modalTesting( el ) {
-    let parent = $(el.target).parent();
-    console.log("parent:", parent);
-  }
-
   spawnModal( siteOrApp , type) {
     function siteModalBody() {
       let site = siteOrApp.site;
@@ -192,13 +176,19 @@ class ViewBuilder {
                         `;
         return html;
       }
-      function buildCheckTable() {
-        function createRow( check ) {
+      function buildSiteCheckTable() {
+        let createdCheckCount = 0;
+        function createCheckRow( check ) {
           let html = '';
           if ( check.status !== 'correct' ) {
+            createdCheckCount++;
+            let checkStatusHtml = `<span class="badge badge-warning badge-pill">Warning</span>`;
+            if ( check.status === 'incorrect' ) {
+              checkStatusHtml = `<span class="badge badge-danger badge-pill">Incorrect</span>`;
+            }
             html = `<tr class='clickable-row'>
                           <td>${check.name}</td>
-                          <td>${check.status}</td>
+                          <td>${checkStatusHtml}</td>
                           <td>${check.details}</td>
                         </tr>`
           }
@@ -216,10 +206,11 @@ class ViewBuilder {
                           <tbody>
                         `;
         checks.forEach( (check) => {
-          html += createRow( check );
+          html += createCheckRow( check );
         })
 
         html += '</tbody></table>';
+        if ( createdCheckCount === 0 ) { html = '';}
         return html;
       }
       function buildInfoSection() {
@@ -229,10 +220,10 @@ class ViewBuilder {
         html += '</div>'
         return html;
       }
-      let html = buildInfoSection();
-      html += buildSpnTable();
+      //let html = buildInfoSection();
+      let html = buildSpnTable();
       html += buildBindingsTable();
-      html += buildCheckTable();
+      html += buildSiteCheckTable();
       return html;
     }
     function appModalBody() {
@@ -259,13 +250,19 @@ class ViewBuilder {
         html += `</tbody></table>`
         return html;
       }
-      function buildCheckTable() {
+      function buildAppCheckTable() {
+        let createdCheckCount = 0;
         function createRow( check ) {
           let html = '';
           if ( check.status !== 'correct' ) {
+            createdCheckCount++;
+            let checkStatusHtml = `<span class="badge badge-warning badge-pill">Warning</span>`;
+            if ( check.status === 'incorrect' ) {
+              checkStatusHtml = `<span class="badge badge-danger badge-pill">Incorrect</span>`;
+            }
             html = `<tr class='clickable-row'>
                           <td>${check.name}</td>
-                          <td>${check.status}</td>
+                          <td>${checkStatusHtml}</td>
                           <td>${check.details}</td>
                         </tr>`
           }
@@ -287,6 +284,7 @@ class ViewBuilder {
         })
 
         html += '</tbody></table>';
+        if ( createdCheckCount === 0 ) { html = '';}
         return html;
       }
       function buildInfoSection() {
@@ -296,9 +294,9 @@ class ViewBuilder {
         html += '</div>'
         return html;
       }
-      let html = buildInfoSection();
-      html += buildSpnTable();
-      html += buildCheckTable();
+      //let html = buildInfoSection();
+      let html = buildSpnTable();
+      html += buildAppCheckTable();
       return html;
     }
 
@@ -314,15 +312,8 @@ class ViewBuilder {
 
     $('#detailModal').modal({})
   }
-
-
-
-
-
-
   handles() {
     let that = this;
-
     function setDetailedItemsHandle(){
       $('.detailedItem').on('click', (el) => {
         let parent = $(el.target).parent(),
@@ -349,16 +340,30 @@ class ViewBuilder {
       //first reset current selection
       let tableRows = $('#siteTable').find('tr').toArray(),
           iconCol = $(clickedRow).find('.arrow-icon');
-      tableRows.forEach( (row) => {
-        if ( $(row).hasClass('table-primary') ) {
-          let iconCol = $(row).find('.arrow-icon');
-          iconCol.html('<i class="fa fa-caret-down" aria-hidden="true"></i>')
-          $(row).removeClass('table-primary')
-        }
-      })
 
-      $(clickedRow).addClass('table-primary');
-      $(iconCol).html('<i class="fa fa-caret-right" aria-hidden="true"></i>')
+      if ( $(clickedRow).hasClass('table-primary') ) {
+        //The clicked row is currently open
+        let iconCol = $(clickedRow).find('.arrow-icon');
+        iconCol.html('<i class="fa fa-caret-down" aria-hidden="true"></i>')
+        $(clickedRow).removeClass('table-primary');
+        $('#detailedView').fadeOut('fast', function() {
+          $('#detailedView').html( that.buildTutorial() )
+            $('#detailedView').fadeIn();
+        });
+
+
+      } else {
+        tableRows.forEach( (row) => {
+          if ( $(row).hasClass('table-primary') ) {
+            let iconCol = $(row).find('.arrow-icon');
+            iconCol.html('<i class="fa fa-caret-down" aria-hidden="true"></i>')
+            $(row).removeClass('table-primary')
+          }
+        })
+        $(clickedRow).addClass('table-primary');
+        $(iconCol).html('<i class="fa fa-caret-right" aria-hidden="true"></i>')
+      }
+
 
 
 
@@ -367,10 +372,10 @@ class ViewBuilder {
     }
 
     $('.clickable-row').on('click', (el) => {
-      let clickedRow = $(el.target).parent(),
+      let clickedRow = $(el.target).closest('.clickable-row'),
           siteName = clickedRow.find('.siteName').text(),
           analyzedSite = this.findSite( siteName );
-      console.log("Cl", clickedRow)
+      if ( clickedRow)
       toggleRow( clickedRow )
       $('#detailedView').html( this.buildSummaryView( analyzedSite ) );
       $('#detailedView').data('data', analyzedSite);
@@ -379,10 +384,11 @@ class ViewBuilder {
   }
 
   buildView() {
-    console.log(this.analysis)
+    console.log("Analysis", this.analysis)
     let htmlTable = this.buildTable( this.analysis.analyzedSites )
     $('#siteTable').append(htmlTable)
     this.setBaseInfo();
+    $('#detailedView').html( this.buildTutorial() )
     this.handles();
   }
 
@@ -449,6 +455,7 @@ class ViewBuilder {
     rebuildBody()
     let htmlTable = this.buildTable( this.analysis.analyzedSites )
     $('#siteTable').append(htmlTable)
+    $('#detailedView').html( this.buildTutorial() )
     this.setBaseInfo();
     this.handles();
 
