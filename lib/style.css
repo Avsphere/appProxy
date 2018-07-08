@@ -8,6 +8,10 @@ tr.clickable-row {
   margin-bottom: 2%;
 }
 
+.form-row > .col {
+  padding-top: 1%;
+}
+
 #wrapper {
     position: absolute;
     left: 0;

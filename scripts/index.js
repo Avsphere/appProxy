@@ -1,25 +1,6 @@
 $(function() {
-  const configData = configDiscoveryData;
+  let viewMaster = new ViewBuilder();
 
-  function init() {
-    let configApi = new ConfigApi(configData);
-    let analyzer = new Analyzer( configApi );
-    let viewBuilder = new ViewBuilder( analyzer.results )
-    viewBuilder.buildView()
-
-
-
-  }
-
-
-
-  init();
-
-
-
-
-
-
-
+  viewMaster.init();
 
 })

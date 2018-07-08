@@ -14,7 +14,7 @@
 
     <header class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar">
       <a class="navbar-brand mr-0 mr-md-2" href="#">
-        <img class="logoImage" src="./lib/microsoftLogo.png"/>
+        <img class="logoImage" src="./lib/microsoftLogo.png" alt=""/>
       </a>
       <div class="pageTitle">
         <h4 >
@@ -27,7 +27,7 @@
 
     <!-- Begin page content -->
     <main role="main" class="container">
-      <div class="modal" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:800px">
           <div class="modal-content">
             <div class="modal-header">
@@ -46,27 +46,21 @@
           </div>
         </div>
       </div>
-      <h1 class="mt-5" id="serverName"></h1>
-      <h5 id="iisVersion"></h5>
-      <h5 id="osInfo"></h5>
+      <br>
+      <h1 style="margin-left:25%" > App Proxy Auto Publish </h1>
       <br>
       <br>
       <div class="container">
-        <div class="row">
-          <div class="col-sm">
-            <div id="siteTable">
-              <h2>Sites</h2>
-
-            </div>
-          </div>
-          <div class="col-sm" id="rightColumn">
-            <div style="margin-left:2%">
-              <div class="list-group" id="detailedView">
-              </div>
-            </div>
-          </div>
-        </div>
+        <button type="button" class="btn btn-primary" id="addWiaApp">Add WIA Application<i class="fa fa-plus-circle" aria-hidden="true" style="padding-left: 1rem"></i></button>
+        <button type="button" class="btn btn-info" id="addFormApp">Add Form Application<i class="fa fa-plus-circle" aria-hidden="true" style="padding-left: 1rem"></i></button>
       </div>
+      <br>
+      <br>
+      <div class="container" id="formContainer">
+
+      </div>
+
+
 
     </main>
 
@@ -77,9 +71,6 @@
     </footer>
     <script src="./lib/jquery.min.js"></script>
     <script src="./lib/bootstrap.min.js"></script>
-    <script src="./scripts/configDiscoveryData.js"></script>
-    <script src="./scripts/configApi.js"></script>
-    <script src="./scripts/analyzer.js"></script>
     <script src="./scripts/viewBuilder.js"></script>
     <script src="./scripts/index.js"></script>
   </body>
