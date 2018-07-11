@@ -3,12 +3,11 @@ class ViewBuilder {
     this.analysis = analysis;
   }
 
-  setBaseInfo(){
+  setBaseServerInfo(){
     $('#serverName').text( "Server name: " + this.analysis.serverName )
     $('#osInfo').text( "Os: " + this.analysis.os );
     $('#iisVersion').text( "IIS Version: " + this.analysis.serverVersion );
   }
-
   buildTable() {
     let that = this;
     function determineProgressColor( score ) {
@@ -17,9 +16,10 @@ class ViewBuilder {
       else if ( score < 90 ) { return 'bg-success'; }
       else { return ''; }
     }
-    function createRow( site ) {
-      let readinessScore = site.readinessScore.toPrecision(3),
-          appCount = site.analyzedApps.length;
+    function createRow( analyzedSite ) {
+      let readinessScore = analyzedSite.readinessScore.toPrecision(3),
+          appCount = analyzedSite.analyzedApps.length,
+          hostName = analyzedSite.site.bindings.hostName;
       let progressColor = determineProgressColor( readinessScore );
       let progressHtml = `
       <div class="progress">
@@ -28,10 +28,11 @@ class ViewBuilder {
         </div>
       </div>`
       let html = `<tr class='clickable-row'>
-                    <td class="arrow-icon"> <i class="fa fa-caret-down" aria-hidden="true"></i></i> </td>
-                    <td class="siteName">${site.siteName}</td>
+                    <td class="open-icon"> <i class="fas fa-plus-circle"></i> </td>
+                    <td class="siteName">${analyzedSite.siteName}</td>
                     <td>${progressHtml}</td>
                     <td>${appCount}</td>
+                    <td><a href="${hostName}" target="_blank">${hostName}</a> </td>
                   </tr>`
       return html;
     }
@@ -42,6 +43,7 @@ class ViewBuilder {
                         <th>Site Name</th>
                         <th>Readiness (%) </th>
                         <th>Nested Applications</th>
+                        <th>Hostname</th>
                       </tr>
                     </thead>
                     <tbody>`;
@@ -77,9 +79,23 @@ class ViewBuilder {
       }
       return html;
     }
+
     function buildSiteSection() {
-      let readinessScore = clickedSite.readinessScore.toPrecision(3);
-      let html = `<div class="siteSection"><h3 class="sectionHeader">Site: ${clickedSite.siteName} <span style="float:right"> Readiness Score: ${readinessScore} </span></h3>`;
+      function buildSiteTitle() {
+        let readinessScore = clickedSite.readinessScore.toPrecision(3);
+        let html = `
+        <div class="row">
+          <div class="col" style="white-space: nowrap;">
+            <h3>Site: <span class="sectionTitle"> ${clickedSite.siteName} </span> </h3>
+          </div>
+          <div class="col" style="white-space: nowrap;">
+            <h3>Readiness Score: <span class="sectionTitle"> ${readinessScore} </span> </h3>
+          </div>
+          </div>`;
+          return html;
+      }
+      let html = `<div class="siteSection">`;
+      html += buildSiteTitle();
       that.orderChecks(clickedSite.checks);
       clickedSite.checks.forEach( (check) => {
         html += buildListItem(check);
@@ -88,11 +104,26 @@ class ViewBuilder {
       return html;
     }
     function buildAppsSection() {
-      let html = '';
-      clickedSite.analyzedApps.forEach( (app) => {
+      //7/6 there is a div not being closed? Must be careful here as I am storing the app data in this div then doing a parent search to find
+      function buildAppTitle( app ) {
         let appData = app.app,
             readinessScore = app.readinessScore.toPrecision(3);
-        html += `<div class="appSection" data-appName="${appData.appName}"> <h5 class="sectionHeader">App: ${appData.appName} <span style="float:right"> Readiness Score: ${readinessScore}</span></h5>`;
+        let html = `
+        <div class="row" data-appName="${appData.appName}">
+          <div class="col" style="white-space: nowrap;">
+            <h5 class="sectionHeader">App: <span class="sectionTitle"> ${appData.appName} </span> </h5>
+          </div>
+          <div class="col" style="white-space: nowrap;">
+            <h5 class="sectionHeader">Readiness Score: <span class="sectionTitle"> ${readinessScore} </span> </h5>
+          </div>
+          </div>`;
+          return html;
+      }
+      let html = '';
+      clickedSite.analyzedApps.forEach( (app) => {
+        html += '<div class="appSection">';
+        html += buildAppTitle( app );
+        //html += `<div class="appSection" data-appName="${appData.appName}"> <h5 class="sectionHeader">App: ${appData.appName} <span style="float:right"> Readiness Score: ${readinessScore}</span></h5>`;
         that.orderChecks(app.checks);
         app.checks.forEach( (check) => {
           html += buildListItem(check);
@@ -115,11 +146,12 @@ class ViewBuilder {
   }
   buildTutorial() {
     let html = `<div style="margin-left: 20%;">
-                  <h3> About This Tool</h3>
-                  <p> Click a site to reveal its configuration settings in the context of Application Proxy</p>
-                <p>Use the readiness score to quickly gauge what sites or apps need the most work.</p>
+                  <a href="./documentation.html" style="color:black;"> <h3> About This Tool</h3> </a>
+                  <p>For more detailed documentation click the link above or the documentation link </p>
+                  <p> Click a site in the table to the left to reveal its configuration settings in the context of Application Proxy</p>
+                  <p> Once a site has been clicked you can select one of the list items for a more detailed view / publication script </p>
+                  <p>Use the readiness score to quickly gauge what sites or apps likely need the most work.</p>
 
-                <p>This score should be seen as a heuristic as it simply looks at the ratio of correct configuration checks vs the incorrect / warning configuration checks</p>
 
                 </div>`
     return html;
@@ -300,12 +332,14 @@ class ViewBuilder {
     }
 
     if ( type === 'site' ) {
-      let site = siteOrApp.site;
-      $('.modal-title').text(site.siteName)
+      let site = siteOrApp.site,
+          modalTitle = "Site Name: " + site.siteName;
+      $('.modal-title').text(modalTitle)
       $('.modal-body').html( siteModalBody() )
     } else if ( type === 'app' ) {
-      let app = siteOrApp.app;
-      $('.modal-title').text(app.appName)
+      let app = siteOrApp.app,
+          modalTitle = "Application name: " + app.appName;
+      $('.modal-title').text(modalTitle)
       $('.modal-body').html( appModalBody() )
     }
 
@@ -319,8 +353,9 @@ class ViewBuilder {
             siteContext = $('#detailedView').data('data'),
             analyzedApps = siteContext.analyzedApps;
         let siteOrApp, type;
+        console.log("Paerent", parent)
         if ( parent.hasClass('appSection') ) {
-          let appName = parent.attr('data-appName');
+          let appName = parent.find('.row').attr('data-appName');
           analyzedApps.find( (a) => {
             let currApp = a.app.appName;
             if ( currApp === appName) {
@@ -338,12 +373,12 @@ class ViewBuilder {
     function toggleRow( clickedRow ) {
       //first reset current selection
       let tableRows = $('#siteTable').find('tr').toArray(),
-          iconCol = $(clickedRow).find('.arrow-icon');
+          iconCol = $(clickedRow).find('.open-icon');
 
       if ( $(clickedRow).hasClass('table-primary') ) {
         //The clicked row is currently open
-        let iconCol = $(clickedRow).find('.arrow-icon');
-        iconCol.html('<i class="fa fa-caret-down" aria-hidden="true"></i>')
+        let iconCol = $(clickedRow).find('.open-icon');
+        iconCol.html('<i class="fas fa-plus-circle"></i>')
         $(clickedRow).removeClass('table-primary');
         $('#detailedView').fadeOut('fast', function() {
           $('#detailedView').html( that.buildTutorial() )
@@ -354,13 +389,13 @@ class ViewBuilder {
       } else {
         tableRows.forEach( (row) => {
           if ( $(row).hasClass('table-primary') ) {
-            let iconCol = $(row).find('.arrow-icon');
-            iconCol.html('<i class="fa fa-caret-down" aria-hidden="true"></i>')
+            let iconCol = $(row).find('.open-icon');
+            iconCol.html('<i class="fas fa-plus-circle"></i>')
             $(row).removeClass('table-primary')
           }
         })
         $(clickedRow).addClass('table-primary');
-        $(iconCol).html('<i class="fa fa-caret-right" aria-hidden="true"></i>')
+        $(iconCol).html('<i class="fas fa-minus-circle"></i>')
       }
 
 
@@ -386,7 +421,7 @@ class ViewBuilder {
     console.log("Analysis", this.analysis)
     let htmlTable = this.buildTable( this.analysis.analyzedSites )
     $('#siteTable').append(htmlTable)
-    this.setBaseInfo();
+    this.setBaseServerInfo();
     $('#detailedView').html( this.buildTutorial() )
     this.handles();
   }
@@ -432,7 +467,6 @@ class ViewBuilder {
                 <div style="margin-left:2%">
                   <h2>Configuration Summary</h2>
                   <p>Click an item for remediation assitance or if the app / site has a 100% readiness score, click for a publication script!</p>
-                  <hr>
                   <div class="list-group" id="detailedView">
                   </div>
                 </div>
@@ -455,7 +489,7 @@ class ViewBuilder {
     let htmlTable = this.buildTable( this.analysis.analyzedSites )
     $('#siteTable').append(htmlTable)
     $('#detailedView').html( this.buildTutorial() )
-    this.setBaseInfo();
+    this.setBaseServerInfo();
     this.handles();
 
   }

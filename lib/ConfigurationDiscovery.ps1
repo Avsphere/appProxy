@@ -1,32 +1,5 @@
-#Author: Avsphere
-#Purpose : This script queries relevant IIS config in the context of App Proxy publication requirements
-#Current State : Collects known data points, needs a few fixes eg the authentication form find fix, advanced error handling, support for *nix, additional parameter support (run on remote), help function
-
-# This is intended to help if the server is very old - it may not be necessary, but I found it in a solution guide
-function Import-WebAdministration {
-    [CmdletBinding()]
-    param()
-
-    try {
-	    Add-PSSnapin WebAdministration -ErrorAction Stop
-    } catch {
-            try {
-		         Import-Module WebAdministration -ErrorAction Stop
-		        } catch {
-			        Write-Warning "We failed to load the WebAdministration module. This usually resolved by doing one of the following:"
-			        Write-Warning "1. Install IIS via Add Roles and Features, Web Server (IIS)"
-			        Write-Warning "2. Install .NET Framework 3.5.1"
-			        Write-Warning "3. Upgrade to PowerShell 3.0 (or greater)"
-			        Write-Warning "4. On Windows 2008 you might need to install PowerShell SnapIn for IIS from http://www.iis.net/downloads/microsoft/powershell#additionalDownloads"
-			        throw ($error | Select-Object -First 1)
-            }
-    }
-}
-
-
-
-
-
+$Global:metaData = @{ checkConnector = $false; connectorName = ''}
+$Global:testy = @{}
 function Get-iisVersion {
     [CmdletBinding()]
     Param()
@@ -39,11 +12,74 @@ function Get-iisVersion {
     else {
         throw "Did not find IIS"
     }
+}
+function Get-Bindings {
+    [CmdletBinding()]
+    Param (
+        [string]$siteName
+    )
+    Begin {
+        $bindingConfig = (Get-WebBinding $siteName).bindingInformation.split(':')
+        $relevantData = @{}
+    }
 
+    Process {
+       $relevantData.address = $bindingConfig[0]
+       $relevantData.port = $bindingConfig[1]
+       $relevantData.hostName = $bindingConfig[2]
+    }
 
+    End {
+        return $relevantData
+    }
 }
 
 
+function Get-ValidSpns {
+    [CmdletBinding()]
+    Param (
+        [string]$poolIdentity
+    )
+    Begin {
+        $serverName = $env:COMPUTERNAME.ToLower()
+        $FQDN = ( (Get-WmiObject win32_computersystem).DNSHostName + "." + (Get-WmiObject win32_computersystem).Domain ).toLower()
+        $spnConfig = New-Object System.Collections.Generic.List[System.Object]
+    }
+    Process {
+
+        setspn -l $poolIdentity | foreach {
+            $spnItem = $_.toLower()
+            if ( $spnItem.Contains('host/') -or $spnItem.Contains('http/') -and (-Not $spnItem.Contains('restricted') ) ) {
+                if ( $spnItem.contains($FQDN) -or $spnItem.contains($serverName) ) {
+                    $spnConfig.add($spnItem.Trim())
+                }
+            }
+        }
+
+
+    }
+
+    End {
+        return $spnConfig
+    }
+
+}
+function IsDuplicateSpns {
+    [CmdletBinding()]
+    Param ()
+    Begin {
+        $dupes = setspn -x
+        $resultLine = $dupes[-2]
+    }
+    Process {
+        if ( $resultLine.contains('0') ) {
+            return $false
+        } else {
+            return $true
+        }
+
+    }
+}
 function Get-AppPoolConfig {
     [CmdletBinding()]
     Param ( [string]$appPoolName )
@@ -70,37 +106,26 @@ function Get-AppPoolConfig {
     }
 }
 
-function Get-Bindings {
-    [CmdletBinding()]
-    Param (
-        [string]$siteName
-    )
-    Begin {
-        $bindingConfig = (Get-WebBinding $siteName).bindingInformation.split(':')
-        $relevantData = @{}
+
+function InstallRsat {
+    try {
+        Write-Warning "A Connector name was supplied, but RSAT-AD-Powershell has not been installed, ATTEMPTING INSTALLATION"
+        Install-WindowsFeature -Name "RSAT-AD-PowerShell" -ErrorAction Stop
+
+    } catch {
+        throw "Unable to install the RSAT-AD feature $error"
     }
 
-    Process {
-       $relevantData.address = $bindingConfig[0]
-       $relevantData.port = $bindingConfig[1]
-       $relevantData.hostName = $bindingConfig[2]
-    }
-
-    End {
-        return $relevantData
-    }
 }
 
-
-
-### FIX ME - form authentication missing, and this should probably be combined with the Get-SiteAuthenticatio function
-function Get-ApplicationAuthentication {
+function Get-Authentication {
     [CmdletBinding()]
     Param ( [string]$siteName, [string]$appName )
 
     Begin {
         $authentication = @{}
-        $authTypes = Get-WebConfiguration ` -filter "system.webServer/security/authentication/*" ` -PSPath "IIS:\Sites\$siteName\$appName"
+        $authTypes = Get-WebConfiguration -filter "system.webServer/security/authentication/*" -PSPath "IIS:\Sites\$siteName\"
+        if ( $PSBoundParameters.ContainsKey('appName') -eq $true ) { $authTypes = Get-WebConfiguration -filter "system.webServer/security/authentication/*" -PSPath "IIS:\Sites\$siteName\$appName" }
         $providers = @{}
     }
     Process {
@@ -112,143 +137,23 @@ function Get-ApplicationAuthentication {
                     $providers.first = $authType.providers.Collection[0].value
                     $providers.second = $authType.providers.Collection[1].value
 
-                    $authenticationDetails.Add( 'useAppPoolCredentials' , $authType.useAppPoolCredentials )
-                    $authenticationDetails.Add( 'useKernelMode' , $authType.useKernelMode )
-                    $authenticationDetails.Add( 'providers' , $providers )
-
+                    $authenticationDetails.useAppPoolCredentials = $authType.useAppPoolCredentials
+                    $authenticationDetails.useKernelMode = $authType.useKernelMode
+                    $authenticationDetails.providers = $providers
                 }
 
                 $authentication.Add( $authenticationName, $authenticationDetails )
             }
         }
+    }
+
+    End {
         return $authentication
     }
-
 }
 
-##### FIX ME ####
-#This returns the sites authentication methods.
-#Form authentication isnt actually listed as an option, my way to check was if there was no authentications found then it should be forms
-function Get-SiteAuthentication {
-    [CmdletBinding()]
-    Param ( [string]$siteName )
-
-    Begin {
-        $siteAuthentication = @{}
-        $authTypes = (Get-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -location $siteName -filter "/system.WebServer/security/authentication/*" -Name '.')
-        $providers = @{}
-    }
-
-    Process {
-        foreach ($authType in $authTypes ) {
-            $authenticationDetails = @{}
-            $authenticationName = $authType.ItemXPath.split('/')[-1]
-            if ( $authType.enabled -eq $True ) {
-                if ( $authenticationName -eq "windowsAuthentication" ) {
-                    $providers.first = $authType.providers.Collection[0].value
-                    $providers.second = $authType.providers.Collection[1].value
 
 
-                    $authenticationDetails.Add( 'useAppPoolCredentials' , $authType.useAppPoolCredentials )
-                    $authenticationDetails.Add( 'useKernelMode' , $authType.useKernelMode )
-                    $authenticationDetails.Add( 'providers' , $providers )
-                }
-
-                $siteAuthentication.Add( $authenticationName, $authenticationDetails )
-            }
-        }
-
-        if ( $siteAuthentication.Count -eq 0 ) {
-            #forms does not show normally
-            $formsAuth = (Get-WebConfiguration system.web/authentication ( 'IIS:\sites\' + $siteName )  ).Mode
-
-            if ( $formsAuth -eq 'Forms' ) {
-                $siteAuthentication.Add( 'FormsAuthentication', $authenticationDetails )
-            }
-        }
-    }
-
-    End {
-        return $siteAuthentication
-    }
-}
-
-#Should I check that the ports the application is binded to are in the SPN?
-#Is there other possibilites for valid SPNs? Would it be better to return all SPNs then validate on the analysis side?
-function Get-ValidSpns {
-    [CmdletBinding()]
-    Param (
-        [string]$poolIdentity
-    )
-    Begin {
-        $serverName = $env:COMPUTERNAME.ToLower()
-        $FQDN = ( (Get-WmiObject win32_computersystem).DNSHostName+"."+(Get-WmiObject win32_computersystem).Domain ).toLower()
-        $spnConfig = New-Object System.Collections.Generic.List[System.Object]
-    }
-    Process {
-
-        setspn -l $poolIdentity | foreach {
-            $spnItem = $_.toLower()
-            if ( $spnItem.Contains('host/') -or $spnItem.Contains('http/') -and (-Not $spnItem.Contains('restricted') ) ) {
-                if ( $spnItem.contains($FQDN) -or $spnItem.contains($serverName) ) {
-                    $spnConfig.add($spnItem.Trim())
-                }
-            }
-        }
-
-
-    }
-
-    End {
-        return $spnConfig
-    }
-
-}
-
-#this function is sloppy in that it was not tested in a real use case since I am having trouble creating a dupe
-function IsDuplicateSpns {
-    [CmdletBinding()]
-    Param ()
-    Begin {
-        $dupes = setspn -x
-        $resultLine = $dupes[-2]
-    }
-    Process {
-        if ( $resultLine.contains('0') ) {
-            return $false
-        } else {
-            return $true
-        }
-
-    }
-}
-
-## simply abstracting away this convery process
-function Get-SiteConfigurationJSON {
-    return Build-AppProxyConfiguration | ConvertTo-Json -Depth 100
-}
-
-#This takes the json file and creates a js script with one global variable set to the JSON data
-function InjectConfigIntoJS {
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory=$True)]
-        [string]$dirPath,
-
-        [Parameter(Mandatory=$True)]
-        [string]$configData
-    )
-
-    $fileContent = 'let configDiscoveryData = ' + $configData
-
-    New-Item -Path ($dirPath + '\configDiscoveryData.js') -type file -Value $fileContent -Force
-
-    #returns a tag but is unnecessary since it is already in th html file
-    return '<script type="application/javascript" src="./configDiscoveryData.js"><\script>';
-
-}
-
-# This is the second highest level as it builds a site configuration object
 function Get-ApplicationsConfig {
     [CmdletBinding()]
     Param (
@@ -256,7 +161,6 @@ function Get-ApplicationsConfig {
     )
     Begin {
         $applicationsConfig = New-Object System.Collections.Generic.List[System.Object]
-
     }
     Process {
         Get-WebApplication -Site $siteName | ForEach-Object {
@@ -272,62 +176,171 @@ function Get-ApplicationsConfig {
     }
 }
 
-#Top level module function - returns as psObject
-function Build-AppProxyConfiguration {
+function CheckDelegationSettings {
     [CmdletBinding()]
-    param()
+    param(
+    $spns
+    )
+
     Begin {
-        $iisVersion = Get-iisVersion
-        $siteList = New-Object System.Collections.Generic.List[System.Object]
-        $masterConfiguration = @{}
+
+        $delegationSettings = New-Object System.Collections.Generic.List[System.Object]
+
+    }
+    Process {
+
+        $spns | ForEach-Object {
+            $delegationResults = ValidateConnectorDelegationConfiguration -appSpn $_ -connectorMachineName $Global:metaData.connectorName
+            $delegationSettings.add( $delegationResults );
+        }
+
+    }
+
+    End {
+
+        return $delegationSettings
+
+    }
+
+
+}
+
+function ValidateConnectorDelegationConfiguration {
+
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+	    [string]
+        $appSpn,
+
+
+        [Parameter(Mandatory=$true)]
+	    [string]
+        $connectorMachineName
+    )
+
+    Begin {
+        $connectorMachine = Get-ADComputer -Identity $connectorMachineName -Properties * -ErrorAction SilentlyContinue
+        $delegationConfig = @{ 'spn' = $appSpn }
+
     }
 
     Process {
 
-        Get-Website | ForEach-Object {
-        $siteName = $_.name
-        $poolName = $_.ApplicationPool
-        $siteConfig = @{'siteName' = $siteName }
-
-        $siteConfig.authentication = Get-SiteAuthentication -siteName $siteName
-        $siteConfig.appPool = Get-AppPoolConfig -appPoolName $poolName
-        $siteConfig.applications = Get-ApplicationsConfig -siteName $siteName
-        $siteConfig.bindings = Get-Bindings -siteName $siteName
-
-        $siteList.Add( $siteConfig )
+        if ( $connectorMachine -eq $null ) {
+            throw "Connector machine not found"
         }
+
+        $targetSpnInConnector = $connectorMachine.'msDS-AllowedToDelegateTo' | where {$_ -eq $appSpn}
+
+        if ( $targetSpnInConnector -eq $null ) {
+            $delegationConfig.targetSpnInConnector = $false
+
+        } else {
+            $delegationConfig.targetSpnInConnector = $true
+        }
+
+        if ( $connectorMachine.TrustedToAuthForDelegation -eq $false) {
+            $delegationConfig.trustedToAuthForDelegation = $false
+
+        } else {
+            $delegationConfig.trustedToAuthForDelegation = $true
+        }
+
     }
 
     End {
-        $masterConfiguration.serverName = $env:COMPUTERNAME;
-        $masterConfiguration.iisVersion = $iisVersion
-        $masterConfiguration.os = (gcim Win32_OperatingSystem).Caption
-        $masterConfiguration.add( 'sites' , $siteList );
-        $masterConfiguration.duplicateSpns = IsDuplicateSpns
-        return $masterConfiguration
+
+        return $delegationConfig
+
     }
 
 }
 
-
-
-#master function -- this should be run to execute in entirety
-#Assumes directory exists
-function Do-ConfigDiscovery {
+function Build-AppProxyConfiguration {
     [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory=$True)]
-        [string]$dirPath
-    )
+    param( $checkConnector = $false )
 
-    $jsonData = Get-SiteConfigurationJSON
+    Begin {
+        $siteList = New-Object System.Collections.Generic.List[System.Object]
+        $masterConfiguration = @{}
 
-    InjectConfigIntoJS -dirPath $dirPath -configData $jsonData
+        $masterConfiguration.iisVersion = Get-iisVersion;
+        $masterConfiguration.serverName = $env:COMPUTERNAME;
+        $masterConfiguration.os = (gcim Win32_OperatingSystem).Caption
+        $masterConfiguration.duplicateSpns = IsDuplicateSpns
+    }
+
+    Process {
+        Get-Website | ForEach-Object {
+            $siteName = $_.name
+            $poolName = $_.ApplicationPool
+            $siteConfig = @{'siteName' = $siteName }
+            $siteConfig.authentication = Get-SiteAuthentication -siteName $siteName
+            $siteConfig.appPool = Get-AppPoolConfig -appPoolName $poolName
+            $siteConfig.applications = Get-ApplicationsConfig -siteName $siteName
+            $siteConfig.bindings = Get-Bindings -siteName $siteName
+
+            if ( $siteConfig.authentication.Keys.contains('windowsAuthentication') -and $Global:metaData.checkConnector -eq $true ) {
+                $siteConfig.delegationSettings = CheckDelegationSettings -spns  $siteConfig.appPool.spns
+            }
+          $siteList.Add( $siteConfig )
+      }
+    }
+
+    End {
+        $masterConfiguration.add( 'sites' , $siteList );
+        return $masterConfiguration;
+    }
 
 
-    return 0;
+
 }
 
 
+function Run-Main {
+    [CmdletBinding()]
+    Param(
+        [string]$dirPath = (Get-Location).Path,
+        [string]$connectorName,
+        [bool]$onlyJson = $false
+    )
+    Begin {
+        $jsonData = '';
+        if ( $PSBoundParameters.ContainsKey('dirPath') -eq $false ) {
+            Write-Warning "Parameter dirPath was not supplied, executing in current directory: $dirPath"
+        }
 
-#Do-ConfigDiscovery -dirPath C:\Users\avsp\AppData\Roaming\AppProxy
+        if ( $PSBoundParameters.ContainsKey('connectorName') -eq $false ) {
+            Write-Warning "Parameter connectorName was not supplied, therefore cannot check KCD delegation settings"
+        }
+        else {
+           if ( (Get-WindowsFeature RSAT-AD-PowerShell).InstallState -eq "Installed" ) {
+                $Global:metaData.checkConnector = $true;
+                $Global:metaData.connectorName = $connectorName;
+
+           } else {
+                InstallRsat
+           }
+        }
+    }
+
+    Process {
+        $configData = Build-AppProxyConfiguration
+        $jsonData = $configData | ConvertTo-Json -Depth 100
+
+        if ( $onlyJson -eq $true ) {
+            Write-Host $jsonData
+        } else {
+            $fileContent = 'var configDiscoveryData = ' + $jsonData
+            New-Item -Path ($dirPath + '\configDiscoveryData.js') -type file -Value $fileContent -Force
+        }
+
+    }
+
+
+
+
+}

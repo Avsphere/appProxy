@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->
+<!--[if !IE]><!--> <html lang="en"> <!--<![endif]-->
+<head>
+    <title>Responsive website template for documentations</title>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="favicon.ico">
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="./lib/fontMod.css">
+    <link rel="stylesheet" href="./lib/fontawesome/css/all.css">
+    <link rel="stylesheet" href="./lib/bootstrap.min.css">
+    <link rel="stylesheet" href="./lib/prettyDocs.css">
+    <link rel="stylesheet" href="./lib/style.css">
+
+
+</head>
+
+<body class="body-blue">
+    <div class="page-wrapper">
+      <header class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar">
+        <a class="navbar-brand mr-0 mr-md-2" href="#">
+          <img class="logoImage" src="./lib/microsoftLogo.png"/>
+        </a>
+        <div class="pageTitle">
+          <h4>
+            <a href="./index.html">App Proxy Configuration Discovery</a>
+          </h4>
+        </div>
+        <h5 class="documentationLink">
+          <a href="./documentation.html"> Documentation</a>
+        </h5>
+
+      </header>
+        <div class="doc-wrapper">
+            <div class="container">
+                <div id="doc-header" class="doc-header text-center">
+                    <h1 class="doc-title"><i class="icon fa fa-paper-plane"></i> Documentation</h1>
+                    <div class="meta"><i class="fa fa-clock-o"></i> Last updated: July 11, 2018</div>
+                </div><!--//doc-header-->
+                <div class="doc-body">
+                    <div class="doc-content">
+                        <div class="content-inner">
+                            <section id="download-section" class="doc-section">
+                                <h2 class="section-title">Quick Summary</h2>
+                                <div class="section-block">
+                                  <h3 class="block-title">Intended Audience</h3>
+                                    <p>
+                                      This tool is intended to be used by those seeking to publish on-premise apps to Azure AD via App Proxy. There is a strong focus on aiding those with Windows Integrated Authentication apps who seek to enable SSO via Kerberos Constrained Delegation (KCD).
+                                    </p>
+                                    <p>
+                                      This tool will be less useful for those seeking to publish claims based / anonymous authentication apps due to the configuration possibilites.
+                                    </p>
+                                    <p>
+                                      The best way to conceptualize this tool is to think of it as a sanity check, helping to find the most common configuration errors. By no means is this tool a one stop fix all.
+                                    </p>
+                                </div>
+                                <div class="row">
+                                  <div class="col">
+                                    <div class="section-block">
+                                      <h3 class="block-title">What this offers</h3>
+                                          <ul class="list">
+                                            <li>Configuration discovery for IIS servers</li>
+                                            <li>Connector configuration discovery</li>
+                                            <li>Configuration analysis in context of App Proxy</li>
+                                            <li>Remediation tips / links</li>
+                                            <li>Auto generation of publication scripts for ready sites / apps</li>
+                                          </ul>
+                                    </div>
+                                  </div>
+                                  <div class="col">
+                                    <div class="section-block">
+                                      <h3 class="block-title">Requirements</h3>
+                                          <ul class="list">
+                                            <li>Admin permissions</li>
+                                            <li>IIS server 2008+</li>
+                                            <li>Powershell v4</li>
+                                            <li>Edge / Chrome (reccomended)</li>
+                                          </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                                <a href="#"> <h3 class="block-title">View the Demo here!</h3></a>
+
+
+                            </section><!--//doc-section-->
+                            <section id="howitworks-section" class="doc-section">
+                                <h2 class="section-title">How it Works</h2>
+                                <div class="section-block">
+                                    <p>
+                                      When the powershell script is first executed it will search through the servers IIS configuration that is relevant to App Proxy publications, building a configuration object along the way.
+                                    </p>
+                                    <p>
+                                      It will then convert this object to JSON and inject this json into a js file. Unless the onlyJson parameter is used the script will then attempt to open the index.html in a browser (this does not require internet).
+
+                                      Behind the scenes another js file will parse the json, perform an analysis, then render the view.
+                                    </p>
+                                    <p>
+                                      From here the generated GUI can be used to find misconfigured settings, then offer assistance on how these settings can be modified such that the application can be published.
+                                    </p>
+                                    <p>
+                                      After modifying the settings such that there are no errors, one can generate a publication script for either just an individual nested application, or the entire site. This can be done by selecting an app in the right side column, or by selecting the site in the right side column.
+                                    </p>
+                                </div>
+
+
+
+                            </section><!--//doc-section-->
+                            <section id="installation-section" class="doc-section">
+                                <h2 class="section-title">How to Use</h2>
+                                <div id="step1"  class="section-block">
+
+                                    <p>Download the tool or clone the <a href="#"> repository</a>
+                                    </p>
+
+                                    <a href="https://github.com/Avsphere/appProxy/archive/master.zip" class="btn btn-green" target="_blank"><i class="fa fa-download"></i> Download Tool</a>
+                                    <br />
+                                    <br />
+                                    <p>
+                                      Move the tool to your IIS server, open up powershell with admin permissions. Navigate to the tool root directory where the .ps1 lives and execute one of the following:
+                                    </p>
+                                    <div class="code-block">
+                                        <h6>If you have already setup your connector:</h6>
+                                        <p><code>configurationDiscovery -connectorServerName "[put connector name here]"</code></p>
+                                        <h6>If you have NOT setup your connector:</h6>
+                                        <p><code>configurationDiscovery</code></p>
+                                        <h6>If you would just like the JSON output:</h6>
+                                        <p><code>configurationDiscovery -onlyJson</code></p>
+                                    </div><!--//code-block-->
+                                </div><!--//section-block-->
+                                <div id="step2"  class="section-block">
+                                    <h3 class="block-title">Next Steps</h3>
+                                    <p>Very wise and important information
+                                    </p>
+
+                                </div><!--//section-block-->
+                                <div id="step3"  class="section-block">
+                                    <h3 class="block-title">What's Next</h3>
+                                    <p>Even wiser and more important information regarding what to do next
+                                    </p>
+                                </div><!--//section-block-->
+                            </section><!--//doc-section-->
+                        </div><!--//content-inner-->
+                    </div><!--//doc-content-->
+                </div><!--//doc-body-->
+            </div><!--//container-->
+        </div><!--//doc-wrapper-->
+
+    </div><!--//page-wrapper-->
+
+
+
+    <!-- Main Javascript -->
+    <script src="./lib/jquery.min.js"></script>
+    <script src="./lib/bootstrap.min.js"></script>
+
+</body>
+</html>
