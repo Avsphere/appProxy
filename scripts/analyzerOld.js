@@ -20,7 +20,6 @@ class Analyzer {
   determineScope( siteOrApp ) {
     let osType = this.api.getOs(),
         scope = {};
-    console.log("OsType", osType);
     if ( osType.includes('Microsoft') ) {
       scope = this.windowsAnalysis.bind(this);
     } else {
@@ -57,12 +56,22 @@ class Analyzer {
           checks = [];
 
       if ( authTypes.length > 1 ) {
-        checks.push( new ConfigCheck({
-          name : 'Mutliple enabled auths',
-          value : authTypes.toString().replace(/,/g, ', '),
-          status : 'warning',
-          details : 'If for some reason two authentications are enabled if one is anonymous it would default to it'
-        }))
+        if ( authTypes.includes('windowsAuthentication') ) {
+          checks.push( new ConfigCheck({
+            name : 'Multiple enabled auths w/ W.I.A',
+            value : authTypes.toString().replace(/,/g, ', '),
+            status : 'incorrect',
+            details : 'If for some reason two authentications are enabled if one is anonymous it would default to it'
+          }))
+        }
+        else {
+          checks.push( new ConfigCheck({
+            name : 'Multiple enabled auths',
+            value : authTypes.toString().replace(/,/g, ', '),
+            status : 'warning',
+            details : 'If for some reason two authentications are enabled if one is anonymous it would default to it'
+          }))
+        }
       }
       if ( authTypes.includes('windowsAuthentication') ) {
         checks.push( new ConfigCheck({
@@ -73,6 +82,16 @@ class Analyzer {
         }))
         let useAppPoolCredentials = siteOrApp.authentication.windowsAuthentication.useAppPoolCredentials,
             useKernelMode = siteOrApp.authentication.windowsAuthentication.useKernelMode;
+
+        if ( useAppPoolCredentials && useKernelMode ) {
+          checks.push( new ConfigCheck({
+            name : 'useKernelMode and useAppPoolCredentials',
+            value : useKernelMode,
+            status : 'incorrect',
+            details : 'This is incorrect as it will always default to useAppPoolCredentials if available, and if it is not then just useKernelMode should be set'
+          }))
+        }
+
         if ( useAppPoolCredentials && appPool.identityType === 'SpecificUser' ) {
           checks.push( new ConfigCheck({
             name : 'useAppPoolCredentials',
@@ -102,6 +121,7 @@ class Analyzer {
                 details : 'If trying to configure KCD this should be true so that the application pool identity can recieve tickets on behalf of the application'
               }))
             }
+
       } else {
         checks.push( new ConfigCheck({
           name : 'Authentication may require additional configuration',
@@ -118,25 +138,32 @@ class Analyzer {
           checks = [],
           runAdditionalChecks = false,
           checkValue = appPool.username;
-
       if ( appPool.identityType === 'ApplicationPoolIdentity') {
         checkValue = appPool.identityType;
         checks.push( new ConfigCheck({
-          name : 'Identity Type is ApplicationPoolIdentity',
+          name : 'Identity Type is ',
           value : checkValue,
           status : 'warning',
           details : 'Generally one would would find this to be set to SpecificUser'
         }))
       } else if ( appPool.identityType === 'SpecificUser' ) {
         checks.push( new ConfigCheck({
-          name : 'Identity Type is SpecificUser',
+          name : 'Identity Type is ',
           value : checkValue,
           status : 'correct',
           details : 'None'
         }))
+      } else {
+        checkValue = appPool.identityType;
+        checks.push( new ConfigCheck({
+          name : 'Identity Type is ',
+          value : checkValue,
+          status : 'incorrect',
+          details : 'None'
+        }))
       }
 
-      if ( spns.length > 0 ) {
+      if ( spns && spns.length > 0 ) {
         checks.push( new ConfigCheck({
           name : 'Valid SPNs exist for ',
           value : checkValue,
@@ -152,7 +179,6 @@ class Analyzer {
           details : 'Please create the required SPNs for the appPool identity'
         }))
       }
-
       return checks;
     }
 
@@ -166,6 +192,8 @@ class Analyzer {
 
       totalChecks = totalChecks.concat( siteChecks );
       if ( siteApps ) {
+        //This is to fix the powershell convert to json write bug
+        if ( !siteApps.hasOwnProperty('length') ) { siteApps = [siteApps]; }
         siteApps.forEach( (app) => {
           let appChecks = checkAuth.bind(this, app)().concat(checkSpnsandPool.bind(this, app)() );
           let readinessScore = this.simpleReadiness( appChecks );

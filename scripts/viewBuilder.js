@@ -32,7 +32,7 @@ class ViewBuilder {
                     <td class="siteName">${analyzedSite.siteName}</td>
                     <td>${progressHtml}</td>
                     <td>${appCount}</td>
-                    <td><a href="${hostName}" target="_blank">${hostName}</a> </td>
+                    <td><a href="http://${hostName}" target="_blank">${hostName}</a> </td>
                   </tr>`
       return html;
     }
