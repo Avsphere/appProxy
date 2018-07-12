@@ -3,6 +3,7 @@ var configDiscoveryData = {
                   {
                       "bindings":  {
                                        "port":  "80",
+                                       "protocol":  "http",
                                        "hostName":  "aspmaster",
                                        "address":  "*"
                                    },
@@ -43,6 +44,7 @@ var configDiscoveryData = {
                   {
                       "bindings":  {
                                        "port":  "80",
+                                       "protocol":  "http",
                                        "hostName":  "aspDependent",
                                        "address":  "*"
                                    },
@@ -153,6 +155,7 @@ var configDiscoveryData = {
                       "siteName":  "formsExample",
                       "bindings":  {
                                        "port":  "80",
+                                       "protocol":  "http",
                                        "hostName":  "formsExample",
                                        "address":  "*"
                                    },
@@ -165,7 +168,7 @@ var configDiscoveryData = {
                                       "name":  "formsExample",
                                       "identityType":  "ApplicationPoolIdentity"
                                   },
-                      "applications":  [{
+                      "applications":  {
                                            "appPool":  {
                                                            "username":  "PSEUDOPREM-IIS",
                                                            "spns":  [
@@ -198,7 +201,7 @@ var configDiscoveryData = {
                                                                           "targetSpnInConnector":  false
                                                                       }
                                                                   ]
-                                       }],
+                                       },
                       "authentication":  {
                                              "anonymousAuthentication":  {
 
@@ -208,6 +211,7 @@ var configDiscoveryData = {
                   {
                       "bindings":  {
                                        "port":  "80",
+                                       "protocol":  "http",
                                        "hostName":  "",
                                        "address":  "*"
                                    },
@@ -234,6 +238,7 @@ var configDiscoveryData = {
                   {
                       "bindings":  {
                                        "port":  "80",
+                                       "protocol":  "http",
                                        "hostName":  "badSite",
                                        "address":  "*"
                                    },

@@ -49,6 +49,19 @@
                             <section id="download-section" class="doc-section">
                                 <h2 class="section-title">Quick Summary</h2>
                                 <div class="section-block">
+                                  <h3 class="block-title">Background</h3>
+                                    <p>
+                                      Azure AD Application Proxy provides remote access as a service which enables customer to provide their users a cloud experience for their on-premise applications, while leveraging the security of Azure AD.
+                                    </p>
+                                    <p>
+                                      This tool seeks to automate the configuration discovery and diagnosis of potential App Proxy configuration mistakes / requirements necessary to publish on-premise web applications to Azure AD via App Proxy.
+                                    </p>
+                                    <p>
+                                      The input to this tool can vary, but is most likely just the name of your Azure AD connector machine.
+                                      The output is either a generated html view containing the configuration analysis or a raw json blob that can be consumed manually.
+                                    </p>
+                                </div>
+                                <div class="section-block">
                                   <h3 class="block-title">Intended Audience</h3>
                                     <p>
                                       This tool is intended to be used by those seeking to publish on-premise apps to Azure AD via App Proxy. There is a strong focus on aiding those with Windows Integrated Authentication apps who seek to enable SSO via Kerberos Constrained Delegation (KCD).

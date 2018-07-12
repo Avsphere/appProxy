@@ -1,5 +1,4 @@
 $Global:metaData = @{ checkConnector = $false; connectorName = ''}
-$Global:testy = @{}
 function Get-iisVersion {
     [CmdletBinding()]
     Param()
@@ -19,14 +18,17 @@ function Get-Bindings {
         [string]$siteName
     )
     Begin {
-        $bindingConfig = (Get-WebBinding $siteName).bindingInformation.split(':')
+        $bindingConfig = Get-WebBinding $siteName
+        $bindingInformation = $bindingConfig.bindingInformation.split(':')
+
         $relevantData = @{}
     }
 
     Process {
-       $relevantData.address = $bindingConfig[0]
-       $relevantData.port = $bindingConfig[1]
-       $relevantData.hostName = $bindingConfig[2]
+       $relevantData.protocol = $bindingConfig.protocol
+       $relevantData.address = $bindingInformation[0]
+       $relevantData.port = $bindingInformation[1]
+       $relevantData.hostName = $bindingInformation[2]
     }
 
     End {
@@ -166,8 +168,12 @@ function Get-ApplicationsConfig {
         Get-WebApplication -Site $siteName | ForEach-Object {
             $appConfig = @{}
             $appConfig.appName = $_.path.split('/')[1]
-            $appConfig.authentication = Get-ApplicationAuthentication -siteName $siteName -appName $appConfig.appName
+            $appConfig.authentication = Get-Authentication -siteName $siteName -appName $appConfig.appName
             $appConfig.appPool = Get-AppPoolConfig -appPoolName $_.applicationPool
+
+            if ( $appConfig.authentication.Keys.contains('windowsAuthentication') -and $Global:metaData.checkConnector -eq $true ) {
+                $appConfig.delegationSettings = CheckDelegationSettings -spns $appConfig.appPool.spns
+            }
             $applicationsConfig.add( $appConfig )
         }
     }
@@ -188,10 +194,11 @@ function CheckDelegationSettings {
 
     }
     Process {
-
-        $spns | ForEach-Object {
-            $delegationResults = ValidateConnectorDelegationConfiguration -appSpn $_ -connectorMachineName $Global:metaData.connectorName
-            $delegationSettings.add( $delegationResults );
+        if ( $spns.length -gt 0 ) {
+            $spns | ForEach-Object {
+                $delegationResults = ValidateConnectorDelegationConfiguration -appSpn $_ -connectorMachineName $Global:metaData.connectorName
+                $delegationSettings.add( $delegationResults );
+            }
         }
 
     }
@@ -278,7 +285,7 @@ function Build-AppProxyConfiguration {
             $siteName = $_.name
             $poolName = $_.ApplicationPool
             $siteConfig = @{'siteName' = $siteName }
-            $siteConfig.authentication = Get-SiteAuthentication -siteName $siteName
+            $siteConfig.authentication = Get-Authentication -siteName $siteName
             $siteConfig.appPool = Get-AppPoolConfig -appPoolName $poolName
             $siteConfig.applications = Get-ApplicationsConfig -siteName $siteName
             $siteConfig.bindings = Get-Bindings -siteName $siteName
@@ -318,6 +325,7 @@ function Run-Main {
         }
         else {
            if ( (Get-WindowsFeature RSAT-AD-PowerShell).InstallState -eq "Installed" ) {
+                Write-Host "RSAT-AD is installed. Beginning discovery"
                 $Global:metaData.checkConnector = $true;
                 $Global:metaData.connectorName = $connectorName;
 
@@ -329,18 +337,16 @@ function Run-Main {
 
     Process {
         $configData = Build-AppProxyConfiguration
+        $configData.checkedConnector = $Global:metaData.checkConnector
         $jsonData = $configData | ConvertTo-Json -Depth 100
 
         if ( $onlyJson -eq $true ) {
             Write-Host $jsonData
         } else {
             $fileContent = 'var configDiscoveryData = ' + $jsonData
-            New-Item -Path ($dirPath + '\configDiscoveryData.js') -type file -Value $fileContent -Force
+            New-Item -Path ($dirPath + '\data\configDiscoveryData.js') -type file -Value $fileContent -Force
         }
 
     }
-
-
-
 
 }

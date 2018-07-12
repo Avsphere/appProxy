@@ -19,7 +19,8 @@ class ViewBuilder {
     function createRow( analyzedSite ) {
       let readinessScore = analyzedSite.readinessScore.toPrecision(3),
           appCount = analyzedSite.analyzedApps.length,
-          hostName = analyzedSite.site.bindings.hostName;
+          bindings = analyzedSite.site.bindings;
+      let url = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port;
       let progressColor = determineProgressColor( readinessScore );
       let progressHtml = `
       <div class="progress">
@@ -32,7 +33,7 @@ class ViewBuilder {
                     <td class="siteName">${analyzedSite.siteName}</td>
                     <td>${progressHtml}</td>
                     <td>${appCount}</td>
-                    <td><a href="http://${hostName}" target="_blank">${hostName}</a> </td>
+                    <td><a href="${url}" target="_blank">${url}</a> </td>
                   </tr>`
       return html;
     }
