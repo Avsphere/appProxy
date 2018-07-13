@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./lib/fontawesome/css/all.css">
+  <link rel="stylesheet" href="./lib/bootstrap.min.css">
+  <link rel="stylesheet" href="./lib/style.css">
+  <title>App Proxy Configuration Discovery</title>
+</head>
+
+<body>
+
+  <header class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar">
+    <a class="navbar-brand mr-0 mr-md-2" href="#">
+        <img class="logoImage" src="./lib/microsoftLogo.png"/>
+      </a>
+    <div class="pageTitle">
+      <h4>
+          <a href="./index.html">App Proxy Configuration Discovery</a>
+        </h4>
+    </div>
+    <h5 class="documentationLink">
+        <a href="./documentation.html"> Documentation</a>
+      </h5>
+  </header>
+
+  <!-- Begin page content -->
+  <main role="main" class="container">
+    <div class="modal" id="publishModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:800px">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title">PowerShell Publish Script</h1>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary">Download Script <i class="fas fa-download"></i></button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+    <div class="container" style="margin-left:20%;margin-top: 5%;">
+      <h1 style="font-weight: 300;">App Proxy Automated Publication</h1>
+      <br />
+      <h5 style="font-weight: 300;max-width: 70%;">Input your Azure AD connector group and tenant name below</h5>
+      <div class="form-row" style="max-width: 50%; margin-top:2%">
+        <div class="col">
+          <input type="text" class="form-control" id="input-connectorMaster" autocomplete="off" data-type="=internalUrl" placeholder="Connector Group">
+        </div>
+        <div class="col">
+          <input type="text" class="form-control" id="input-domainMaster" autocomplete="off" data-type="=externalUrl" placeholder="Initial Domain">
+        </div>
+      </div>
+    </div>
+    <br>
+    <br>
+    <div class="container" id="publishFormWrapper">
+      <h3> Select the items you wish to publish <button type="button" id="publishBtn" class="btn btn-primary" style="margin-left:10%">Generate publish script <i class="fas fa-cloud-upload-alt"></i></button></h3>
+      <div id="selectionContainer">
+
+      </div>
+    </div>
+
+
+
+  </main>
+
+  <footer class="footer">
+    <div class="container" style="height:200px">
+
+    </div>
+  </footer>
+  <script src="./lib/popper.min.js"></script>
+  <script src="./lib/jquery.min.js"></script>
+  <script src="./lib/bootstrap.min.js"></script>
+  <script src="./data/configDiscoveryData.js"></script>
+  <script src="./scripts/configApi.js"></script>
+  <script src="./scripts/iisAnalysis.js"></script>
+  <script src="./scripts/autoPublish.js"></script>
+</body>
+
+</html>

@@ -24,9 +24,6 @@
       <h5 class="documentationLink">
         <a href="./documentation.html"> Documentation</a>
       </h5>
-
-
-
     </header>
 
     <!-- Begin page content -->
@@ -43,7 +40,6 @@
             <div class="modal-body">
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-info">Generate publish script <i class="fas fa-cloud-upload-alt"></i></button>
               <button type="button" class="btn btn-primary">Download JSON <i class="fas fa-download"></i></button>
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
@@ -60,6 +56,12 @@
           <div class="col-sm">
             <div id="siteTable">
               <h2>Sites</h2>
+            </div>
+            <br />
+
+            <div>
+              <h4>Ready to Automate Publication?</h4>
+              <button type="button" class="btn btn-primary" id="autoPubBtn">Generate Publication Scripts <i class="fas fa-arrow-right"></i></button>
             </div>
           </div>
           <div class="col-sm" id="rightColumn">
@@ -82,7 +84,6 @@
     <script src="./lib/bootstrap.min.js"></script>
     <script src="./data/configDiscoveryData.js"></script>
     <script src="./scripts/configApi.js"></script>
-    <script src="./scripts/analyzerOld.js"></script>
     <script src="./scripts/iisAnalysis.js"></script>
     <script src="./scripts/viewBuilder.js"></script>
     <script src="./scripts/index.js"></script>

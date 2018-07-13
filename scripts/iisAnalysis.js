@@ -1,13 +1,13 @@
-// function ConfigCheck( resultData ) {
-//   let requiredFields = [ 'name', 'value', 'status', 'details' ]
-//   requiredFields.forEach( (field) => {
-//     if ( !resultData.hasOwnProperty(field) ) {
-//       throw new Error("Status obj cannot be constructed with the given fields")
-//     } else {
-//       this[field] = resultData[field];
-//     }
-//   })
-// }
+function ConfigCheck( resultData ) {
+  let requiredFields = [ 'name', 'value', 'status', 'details' ]
+  requiredFields.forEach( (field) => {
+    if ( !resultData.hasOwnProperty(field) ) {
+      throw new Error("Status obj cannot be constructed with the given fields")
+    } else {
+      this[field] = resultData[field];
+    }
+  })
+}
 
 class WindowsAnalysis {
   constructor( api ) {
@@ -129,7 +129,6 @@ class WindowsAnalysis {
       apps.forEach( (app) => {
         uniqDict[ app.appPool.name ] = true;
       })
-      console.log( uniqDict);
       if ( Object.keys( uniqDict ).length > 1 ) {
         checks.push( new ConfigCheck({
           name : 'Multiple App Pools',

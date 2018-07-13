@@ -20,6 +20,7 @@ class ViewBuilder {
       let readinessScore = analyzedSite.readinessScore.toPrecision(3),
           appCount = analyzedSite.analyzedApps.length,
           bindings = analyzedSite.site.bindings;
+      if ( bindings.hostName.length === 0 ) { bindings.hostName = 'localhost' }
       let url = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port;
       let progressColor = determineProgressColor( readinessScore );
       let progressHtml = `
@@ -29,22 +30,22 @@ class ViewBuilder {
         </div>
       </div>`
       let html = `<tr class='clickable-row'>
-                    <td class="open-icon"> <i class="fas fa-plus-circle"></i> </td>
                     <td class="siteName">${analyzedSite.siteName}</td>
                     <td>${progressHtml}</td>
                     <td>${appCount}</td>
                     <td><a href="${url}" target="_blank">${url}</a> </td>
+                    <td class="open-icon"> <i class="fas fa-angle-right"></i> </td>
                   </tr>`
       return html;
     }
     let html = `<table class="table table">
                     <thead>
                       <tr>
-                        <th> </th>
                         <th>Site Name</th>
                         <th>Readiness (%) </th>
                         <th>Nested Applications</th>
                         <th>Hostname</th>
+                        <th> </th>
                       </tr>
                     </thead>
                     <tbody>`;
@@ -146,13 +147,12 @@ class ViewBuilder {
     return found;
   }
   buildTutorial() {
-    let html = `<div style="margin-left: 20%;">
+    let html = `<div style="margin-left: 10%;">
                   <a href="./documentation.html" style="color:black;"> <h3> About This Tool</h3> </a>
                   <p>For more detailed documentation click the link above or the documentation link </p>
                   <p> Click a site in the table to the left to reveal its configuration settings in the context of Application Proxy</p>
                   <p> Once a site has been clicked you can select one of the list items for a more detailed view / publication script </p>
                   <p>Use the readiness score to quickly gauge what sites or apps likely need the most work.</p>
-
 
                 </div>`
     return html;
@@ -348,13 +348,15 @@ class ViewBuilder {
   }
   handles() {
     let that = this;
+    $('#autoPubBtn').on('click', (el) => {
+      window.location.href = './autopub.html'
+    })
     function setDetailedItemsHandle(){
       $('.detailedItem').on('click', (el) => {
         let parent = $(el.target).parent(),
             siteContext = $('#detailedView').data('data'),
             analyzedApps = siteContext.analyzedApps;
         let siteOrApp, type;
-        console.log("Paerent", parent)
         if ( parent.hasClass('appSection') ) {
           let appName = parent.find('.row').attr('data-appName');
           analyzedApps.find( (a) => {
@@ -379,7 +381,7 @@ class ViewBuilder {
       if ( $(clickedRow).hasClass('table-primary') ) {
         //The clicked row is currently open
         let iconCol = $(clickedRow).find('.open-icon');
-        iconCol.html('<i class="fas fa-plus-circle"></i>')
+        iconCol.html('<i class="fas fa-angle-right"></i>')
         $(clickedRow).removeClass('table-primary');
         $('#detailedView').fadeOut('fast', function() {
           $('#detailedView').html( that.buildTutorial() )
@@ -391,12 +393,12 @@ class ViewBuilder {
         tableRows.forEach( (row) => {
           if ( $(row).hasClass('table-primary') ) {
             let iconCol = $(row).find('.open-icon');
-            iconCol.html('<i class="fas fa-plus-circle"></i>')
+            iconCol.html('<i class="fas fa-angle-right"></i>')
             $(row).removeClass('table-primary')
           }
         })
         $(clickedRow).addClass('table-primary');
-        $(iconCol).html('<i class="fas fa-minus-circle"></i>')
+        $(iconCol).html('<i class="fas fa-angle-left"></i>')
       }
 
 
