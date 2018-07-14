@@ -5,7 +5,6 @@ $(function() {
     let configApi = new ConfigApi(configData);
     let analyzer = new WindowsAnalysis( configApi );
     let autoPublish = new AutoPublish( analyzer.results )
-
   }
 
   init();
@@ -139,16 +138,38 @@ class AutoPublish {
 
   generatePublishScript() {
     function pullDataFromRow(row) {
-      return {
+      let dataBlob = {
         siteName : $(row).find('td.siteName').text(),
         chosenSpn : $(row).find('td.chosenSpn').find('.dropdown-toggle').text().trim(),
         connectorGroup : $(row).find('td.connectorCol input').val(),
         tenantName : $(row).find('td.tenantName input').val(),
         internalUrl : $(row).attr('data-internalUrl')
       }
+      if ( $(row).hasClass('siteRow') ) {
+        dataBlob.type = 'site';
+      } else { dataBlob.type = 'app'; }
+      return dataBlob;
     }
-    function buildPsScript( dataBlobs ){
+    function buildPsScript( dataBlobs ) {
+      let psScript = `Connect-AzureAd`;
+      dataBlobs.forEach( (blob) => {
+        let externalUrl = `https://${blob.siteName}-${blob.tenantName}.msappproxy.net/`
+        if ( blob.type === 'app' ) {
+          let pathDirs = blob.siteName.split('/');
+          pathDirs.splice(0,1);
+          externalUrl += pathDirs.join('/') + '/'
+        }
 
+        let scriptBlock = `
+        $connectorGroup = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq ${blob.connectorGroup}}
+        New-AzureADApplicationProxyApplication -DisplayName ${blob.siteName} -InternalUrl ${blob.internalUrl} -ConnectorGroupId $connectorGroup.id -ExternalUrl ${externalUrl} -ExternalAuthenticationType AadPreAuthentication
+        $AppProxyApp1=Get-AzureADApplication  | where-object {$_.Displayname -eq ${blob.siteName}}
+        Set-AzureADApplicationProxyApplicationSingleSignOn -ObjectId $AppProxyApp1.Objectid -SingleSignOnMode OnPremisesKerberos -KerberosInternalApplicationServicePrincipalName ${blob.chosenSpn} -KerberosDelegatedLoginIdentity OnPremisesUserPrincipalName
+        `;
+
+        psScript += '\n' + scriptBlock;
+      })
+      return psScript;
     }
 
     let parents = [], children = [], relevantRows = [];
@@ -171,8 +192,8 @@ class AutoPublish {
     relevantRows =  parents.concat(children);
 
     let dataBlobs = relevantRows.map( row => pullDataFromRow(row) )
-    console.log(dataBlobs)
-
+    console.log( dataBlobs );
+    return buildPsScript( dataBlobs )
   }
 
 
@@ -227,8 +248,14 @@ class AutoPublish {
         }
       }
     }
-    function spawnModal() {
-      let publishScript = that.generatePublishScript();
+    function spawnModal( psScript) {
+      let html = `<pre><code> ${psScript} </code></pre>`
+      $('#modal-psScript').append(html)
+      $('#modal-psScript pre code')
+      .toArray()
+      .forEach( (block) => {
+      	hljs.highlightBlock(block);
+      })
       $('#publishModal').modal({})
     }
     $('.dropdown-item').on('click', (el) => {
@@ -250,7 +277,9 @@ class AutoPublish {
       else { toggleAppRow(clickedRow) }
     })
 
-    $('#publishBtn').on('click', spawnModal);
+    $('#publishBtn').on('click', () => {
+      spawnModal( that.generatePublishScript() )
+    });
 
   }
 

@@ -2,6 +2,11 @@ body {
   font-family: 'Open Sans', arial, sans-serif;
 }
 
+.clipboard {
+  margin-left: 2rem;
+  font-size: 2rem;
+  color: #565353;
+}
 
 
 tr.clickable-row {

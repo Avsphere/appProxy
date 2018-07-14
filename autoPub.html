@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="./lib/fontawesome/css/all.css">
   <link rel="stylesheet" href="./lib/bootstrap.min.css">
   <link rel="stylesheet" href="./lib/style.css">
+  <link rel="stylesheet" href="./lib/vs2015.min.css">
+
   <title>App Proxy Configuration Discovery</title>
 </head>
 
@@ -33,12 +35,15 @@
       <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:800px">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title">PowerShell Publish Script</h1>
+                <h1 class="modal-title">PowerShell Publish Script<a href="#"><i class="fas fa-clipboard clipboard"></i></a></h1>
+
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
           </div>
-          <div class="modal-body">
+
+          <div class="modal-body" id="modal-psScript">
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary">Download Script <i class="fas fa-download"></i></button>
@@ -82,6 +87,8 @@
   <script src="./lib/popper.min.js"></script>
   <script src="./lib/jquery.min.js"></script>
   <script src="./lib/bootstrap.min.js"></script>
+  <script src="./lib/highlight.min.js"></script>
+
   <script src="./data/configDiscoveryData.js"></script>
   <script src="./scripts/configApi.js"></script>
   <script src="./scripts/iisAnalysis.js"></script>
