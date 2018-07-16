@@ -49,9 +49,7 @@ class AutoPublish {
       } else {
         return '';
       }
-
-
-    }
+    } 
     function createSiteRow( analyzedSite,  parentId) {
       let readinessScore = analyzedSite.readinessScore.toPrecision(3),
           appCount = analyzedSite.analyzedApps.length,

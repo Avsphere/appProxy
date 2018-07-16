@@ -239,7 +239,7 @@ var configDiscoveryData = {
                       "bindings":  {
                                        "port":  "80",
                                        "protocol":  "http",
-                                       "hostName":  "conspiracycentral",
+                                       "hostName":  "",
                                        "address":  "*"
                                    },
                       "delegationSettings":  [
