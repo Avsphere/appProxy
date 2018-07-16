@@ -248,16 +248,55 @@ class AutoPublish {
         }
       }
     }
+    function download(filename, text) {
+      var element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', filename);
+
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+
+      document.body.removeChild(element);
+    }
     function spawnModal( psScript) {
-      let html = `<pre><code> ${psScript} </code></pre>`
+      let html = `<pre><code> ${psScript} </code></pre>`;
+      $('#modal-psScript').html('');
       $('#modal-psScript').append(html)
       $('#modal-psScript pre code')
       .toArray()
       .forEach( (block) => {
       	hljs.highlightBlock(block);
       })
+      //reset clipboard
+      $('#copyClipboard').html('<i class="fas fa-clipboard clipboard"></i>')
       $('#publishModal').modal({})
     }
+
+    $('#copyClipboard').on('click', (el) => {
+      el.preventDefault();
+      let textArea = document.createElement('textarea'),
+          modalText = document.getElementById('modal-psScript');
+      modalText.appendChild(textArea);
+      textArea.value = $('#modal-psScript').text();
+      textArea.focus();
+      textArea.select();
+      let successStatus = document.execCommand('copy');
+      console.log("Copy success:", successStatus, textArea.value);
+      modalText.removeChild(textArea);
+      $('#copyClipboard').fadeOut('fast', function() {
+        $('#copyClipboard').html('<i class="fas fa-clipboard-check clipboard"></i>');
+        $('#copyClipboard').fadeIn('fast');
+      })
+
+    })
+
+    $('#dlScript').on('click', (el) => {
+      let text = $('#modal-psScript').text();
+      download('AppProxyAutoPub.ps1', text);
+    })
+
     $('.dropdown-item').on('click', (el) => {
     	let selectedItem = el.target;
       $(selectedItem).parent().parent().find('.btn').text( $(selectedItem).text().trim() )
