@@ -283,7 +283,6 @@ class AutoPublish {
       textArea.focus();
       textArea.select();
       let successStatus = document.execCommand('copy');
-      console.log("Copy success:", successStatus, textArea.value);
       modalText.removeChild(textArea);
       $('#copyClipboard').fadeOut('fast', function() {
         $('#copyClipboard').html('<i class="fas fa-clipboard-check clipboard"></i>');

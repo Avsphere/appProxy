@@ -13,7 +13,7 @@
   <body>
 
     <header class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar">
-      <a class="navbar-brand mr-0 mr-md-2" href="#">
+      <a class="navbar-brand mr-0 mr-md-2" href="#" style="margin-left:2%">
         <img class="logoImage" src="./lib/microsoftLogo.png"/>
       </a>
       <div class="pageTitle">
@@ -22,12 +22,12 @@
         </h4>
       </div>
       <h5 class="documentationLink">
-        <a href="./documentation.html"> Documentation</a>
+        <a href="./documentation.html">Documentation</a>
       </h5>
     </header>
 
     <!-- Begin page content -->
-    <main role="main" class="container">
+    <main role="main" class="container" style="margin-left:12%">
       <div class="modal" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:800px">
           <div class="modal-content">
@@ -37,7 +37,7 @@
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="overflow-y:scroll;">
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary">Download JSON <i class="fas fa-download"></i></button>
@@ -51,11 +51,11 @@
       <h5 id="osInfo"></h5>
       <br>
       <br>
-      <div class="container">
+      <div class="container" style="max-width:1400px">
         <div class="row">
           <div class="col-sm">
             <div id="siteTable">
-              <h2>Sites</h2>
+              <h2>Discovered Sites</h2>
             </div>
             <br />
 

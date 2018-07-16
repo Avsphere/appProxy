@@ -4,7 +4,7 @@ var configDiscoveryData = {
                       "bindings":  {
                                        "port":  "80",
                                        "protocol":  "http",
-                                       "hostName":  "aspmaster",
+                                       "hostName":  "hrweb",
                                        "address":  "*"
                                    },
                       "delegationSettings":  [
@@ -29,7 +29,7 @@ var configDiscoveryData = {
                                       "name":  "aspMaster",
                                       "identityType":  "SpecificUser"
                                   },
-                      "siteName":  "aspMaster",
+                      "siteName":  "HR Web",
                       "authentication":  {
                                              "windowsAuthentication":  {
                                                                            "useAppPoolCredentials":  true,
@@ -45,7 +45,7 @@ var configDiscoveryData = {
                       "bindings":  {
                                        "port":  "80",
                                        "protocol":  "http",
-                                       "hostName":  "aspDependent",
+                                       "hostName":  "payrollmaster",
                                        "address":  "*"
                                    },
                       "delegationSettings":  [
@@ -139,7 +139,7 @@ var configDiscoveryData = {
                                       "name":  "aspDependent",
                                       "identityType":  "SpecificUser"
                                   },
-                      "siteName":  "aspDependent",
+                      "siteName":  "Payroll Manager",
                       "authentication":  {
                                              "windowsAuthentication":  {
                                                                            "useAppPoolCredentials":  true,
@@ -152,11 +152,11 @@ var configDiscoveryData = {
                                          }
                   },
                   {
-                      "siteName":  "formsExample",
+                      "siteName":  "FaceBook 2.0",
                       "bindings":  {
                                        "port":  "80",
                                        "protocol":  "http",
-                                       "hostName":  "formsExample",
+                                       "hostName":  "facebookv2",
                                        "address":  "*"
                                    },
                       "appPool":  {
@@ -210,9 +210,9 @@ var configDiscoveryData = {
                   },
                   {
                       "bindings":  {
-                                       "port":  "80",
+                                       "port":  "443",
                                        "protocol":  "http",
-                                       "hostName":  "",
+                                       "hostName":  "savewhales",
                                        "address":  "*"
                                    },
                       "delegationSettings":  null,
@@ -223,7 +223,7 @@ var configDiscoveryData = {
                                       "name":  "misconfiguredSite",
                                       "identityType":  "SpecificUser"
                                   },
-                      "siteName":  "misconfiguredSite",
+                      "siteName":  "Save Whales",
                       "authentication":  {
                                              "windowsAuthentication":  {
                                                                            "useAppPoolCredentials":  true,
@@ -239,7 +239,7 @@ var configDiscoveryData = {
                       "bindings":  {
                                        "port":  "80",
                                        "protocol":  "http",
-                                       "hostName":  "badSite",
+                                       "hostName":  "conspiracycentral",
                                        "address":  "*"
                                    },
                       "delegationSettings":  [
@@ -339,7 +339,7 @@ var configDiscoveryData = {
                                       "name":  "badlyMisconfiguredSite",
                                       "identityType":  "LocalService"
                                   },
-                      "siteName":  "badlyMisconfiguredSite",
+                      "siteName":  "Conspiracy Central",
                       "authentication":  {
                                              "anonymousAuthentication":  {
 

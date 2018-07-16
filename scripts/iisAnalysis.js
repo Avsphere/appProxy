@@ -81,37 +81,37 @@ class WindowsAnalysis {
           useKernelMode = authData.windowsAuthentication.useKernelMode;
       if ( useAppPoolCredentials && useKernelMode ) {
       checks.push( new ConfigCheck({
-        name : 'useKernelMode and useAppPoolCredentials',
-        value : useKernelMode,
+        name : 'Both useKernelMode and useAppPoolCredentials are true',
+        value : '',
         status : 'incorrect',
         details : 'This is incorrect as it will always default to useAppPoolCredentials if available, and if it is not then just useKernelMode should be set'
       }))
       }
       if ( useAppPoolCredentials && identityType === 'SpecificUser' ) {
         checks.push( new ConfigCheck({
-          name : 'useAppPoolCredentials',
-          value : useAppPoolCredentials,
+          name : 'Identity type is SpecificUser and useAppPoolCredentials is true',
+          value : '',
           status : 'correct',
           details : 'None'
         }))
       } else if ( useKernelMode && identityType === 'ApplicationPoolIdentity' ) {
           checks.push( new ConfigCheck({
-            name : 'useKernelMode',
-            value : useKernelMode,
+            name : 'Identity type is ApplicationPoolIdentity and useKernelMode is true',
+            value : '',
             status : 'correct',
             details : 'If trying to configure KCD this should be true so that the application pool identity can recieve tickets on behalf of the application'
           }))
       } else if ( !useAppPoolCredentials && identityType === 'SpecificUser' ) {
           checks.push( new ConfigCheck({
-            name : 'useAppPoolCredentials',
+            name : 'Identity type is SpecificUser and useAppPoolCredentials is false',
             value : useAppPoolCredentials,
             status : 'incorrect',
             details : 'If trying to configure KCD this should be true so that the application pool identity can recieve tickets on behalf of the application'
           }))
         } else if ( !useKernelMode && identityType === 'ApplicationPoolIdentity' ) {
             checks.push( new ConfigCheck({
-              name : 'useKernelMode',
-              value : useKernelMode,
+              name : 'Identity type is ApplicationPoolIdentity useKernelMode is false',
+              value : '',
               status : 'incorrect',
               details : 'If trying to configure KCD this should be true so that the application pool identity can recieve tickets on behalf of the application'
             }))
@@ -131,7 +131,7 @@ class WindowsAnalysis {
       })
       if ( Object.keys( uniqDict ).length > 1 ) {
         checks.push( new ConfigCheck({
-          name : 'Multiple App Pools',
+          name : 'Child Apps have multiple app pools',
           value : Object.keys( uniqDict ).toString(),
           status : 'warning',
           details : 'This sites apps are utilizing multiple app pools which is a likely cause of error if planning on KCD SSO'
@@ -147,33 +147,32 @@ class WindowsAnalysis {
         spns = appPool.spns,
         checkValue = appPool.username;
     if ( appPool.identityType === 'ApplicationPoolIdentity') {
-      checkValue = appPool.identityType;
       checks.push( new ConfigCheck({
         name : 'Identity Type is ',
-        value : checkValue,
+        value : appPool.identityType,
         status : 'warning',
         details : 'Generally one would would find this to be set to SpecificUser'
       }))
     } else if ( appPool.identityType === 'SpecificUser' ) {
-      checks.push( new ConfigCheck({
-        name : 'Identity Type is ',
-        value : checkValue,
-        status : 'correct',
-        details : 'None'
-      }))
+      /* This check is repetive' */
+      // checks.push( new ConfigCheck({
+      //   name : 'Identity Type is ',
+      //   value : appPool.identityType,
+      //   status : 'correct',
+      //   details : 'None'
+      // }))
     } else {
-      checkValue = appPool.identityType;
       checks.push( new ConfigCheck({
         name : 'Identity Type is ',
-        value : checkValue,
+        value : appPool.identityType,
         status : 'incorrect',
         details : 'None'
       }))
     }
     if ( spns && spns.length > 0 ) {
       checks.push( new ConfigCheck({
-        name : 'Valid SPNs exist for ',
-        value : checkValue,
+        name : 'Valid SPNs exist for configured identity type',
+        value : '',
         status : 'correct',
         details : 'None'
       }))
@@ -209,7 +208,7 @@ class WindowsAnalysis {
       delegationSettings.forEach( (item) => {
         if ( item.trustedToAuthForDelegation && item.targetSpnInConnector ) {
           checks.push( new ConfigCheck({
-            name : 'Delegation Check for ',
+            name : 'Allowed to delegate to',
             value : item.spn,
             status : 'correct',
             details : 'None'

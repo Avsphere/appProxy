@@ -1,7 +1,12 @@
 body {
   font-family: 'Open Sans', arial, sans-serif;
 }
+@media (min-width:1200px){
+  .container {
+    max-width: 1400px;
+  }
 
+}
 .clipboard {
   margin-left: 2rem;
   font-size: 2rem;
@@ -78,7 +83,7 @@ tr.clickable-row {
 }
 
 .documentationLink {
-  margin-left: 5%;
+  margin-left: 3%;
   margin-top: .75rem;
 }
 .documentationLink a {

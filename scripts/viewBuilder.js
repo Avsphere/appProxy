@@ -5,7 +5,7 @@ class ViewBuilder {
 
   setBaseServerInfo(){
     $('#serverName').text( "Server name: " + this.analysis.serverName )
-    $('#osInfo').text( "Os: " + this.analysis.os );
+    $('#osInfo').text( "OS: " + this.analysis.os );
     $('#iisVersion').text( "IIS Version: " + this.analysis.serverVersion );
   }
   buildTable() {
@@ -20,8 +20,9 @@ class ViewBuilder {
       let readinessScore = analyzedSite.readinessScore.toPrecision(3),
           appCount = analyzedSite.analyzedApps.length,
           bindings = analyzedSite.site.bindings;
-      if ( bindings.hostName.length === 0 ) { bindings.hostName = 'localhost' }
       let url = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port;
+      if ( bindings.hostName.length === 0 ) { url = ''; }
+
       let progressColor = determineProgressColor( readinessScore );
       let progressHtml = `
       <div class="progress">
@@ -41,10 +42,10 @@ class ViewBuilder {
     let html = `<table class="table table">
                     <thead>
                       <tr>
-                        <th>Site Name</th>
+                        <th>IIS Site Name</th>
                         <th>Readiness (%) </th>
-                        <th>Nested Applications</th>
-                        <th>Hostname</th>
+                        <th>Child Applications</th>
+                        <th>Defined Hostname</th>
                         <th> </th>
                       </tr>
                     </thead>
@@ -71,13 +72,15 @@ class ViewBuilder {
   buildSummaryView( clickedSite ) {
     let that = this;
     function buildListItem( check ) {
-      let html = '';
+      let html = '',
+          addColon = check.value !== '' ? ' : '  : '',
+          itemText = check.name + addColon + check.value;
       if ( check.status === 'correct' ) {
-        html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${check.name} : ${check.value}<span class="badge badge-primary badge-pill">✓</span></a>`
+        html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${itemText}<span class="badge badge-primary badge-pill">✓</span></a>`
       } else if ( check.status === 'warning' ) {
-          html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${check.name} : ${check.value}<span class="badge badge-warning badge-pill">Warning</span></a>`
+          html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${itemText}<span class="badge badge-warning badge-pill">Warning</span></a>`
       } else {
-          html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${check.name} : ${check.value}<span class="badge badge-danger badge-pill">X</span></a>`
+          html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${itemText}<span class="badge badge-danger badge-pill">X</span></a>`
       }
       return html;
     }
@@ -176,11 +179,17 @@ class ViewBuilder {
                           </tr>
                         </thead>
                         <tbody>`;
-        site.appPool.spns.forEach( (spn, i) => {
-          html += createRow(i, spn);
-        })
-        html += `</tbody></table>`
-        return html;
+        if ( site.appPool.spns ) {
+          site.appPool.spns.forEach( (spn, i) => {
+            html += createRow(i, spn);
+          })
+          html += `</tbody></table>`
+          return html;
+        } else {
+          return '';
+        }
+
+
       }
       function buildBindingsTable() {
         let bindings = site.bindings;
@@ -247,13 +256,43 @@ class ViewBuilder {
       }
       function buildInfoSection() {
         let html = '<div class="modalInfo">'
-        html += '<h3> Info for site </h3>'
-        html += '<p> This is important info about site.... </p>'
+        html += '<h3>General Info</h3>'
+        html += `<p> Important info</p>`;
         html += '</div>'
+        return html;
+      }
+      function buildAppPoolTable() {
+        let identityValueRow = '';
+        if ( site.appPool.identityType === 'SpecificUser' ) {
+          identityValueRow = `<tr class='clickable-row'>
+                                    <td>Identity Value: </td>
+                                    <td>${site.appPool.username}</td>
+                              </tr>`
+        }
+        let html = `<table class="table" id="appPoolTable">
+                        <thead>
+                          <tr>
+                            <th>App Pool Data</th>
+                            <th></th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          <tr class='clickable-row'>
+                              <td>App Pool Name:</td>
+                              <td>${site.appPool.name}</td>
+                          </tr>
+                          <tr class='clickable-row'>
+                              <td>Identity Type: </td>
+                              <td>${site.appPool.identityType}</td>
+                          </tr>
+                          ${identityValueRow}
+                        </tbody></table>
+                        `;
         return html;
       }
       //let html = buildInfoSection();
       let html = buildSpnTable();
+      html += buildAppPoolTable();
       html += buildBindingsTable();
       html += buildSiteCheckTable();
       return html;
@@ -418,14 +457,26 @@ class ViewBuilder {
       $('#detailedView').data('data', analyzedSite);
       setDetailedItemsHandle( analyzedSite );
     })
+
+    $(window).on('resize', (el) => {
+      that.resizeModal();
+    })
+
+  }
+
+  resizeModal() {
+    let maxModalHeight = $(window).height() - 300;
+    $('#detailModal .modal-body').css('max-height', maxModalHeight + 'px')
   }
 
   buildView() {
     console.log("Analysis", this.analysis)
-    let htmlTable = this.buildTable( this.analysis.analyzedSites )
+    let htmlTable = this.buildTable( this.analysis.analyzedSites );
+
     $('#siteTable').append(htmlTable)
     this.setBaseServerInfo();
     $('#detailedView').html( this.buildTutorial() )
+    this.resizeModal();
     this.handles();
   }
 
