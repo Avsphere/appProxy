@@ -388,7 +388,7 @@ class ViewBuilder {
   handles() {
     let that = this;
     $('#autoPubBtn').on('click', (el) => {
-      window.location.href = './autopub.html'
+      window.location.href = './autoPub.html'
     })
     function setDetailedItemsHandle(){
       $('.detailedItem').on('click', (el) => {

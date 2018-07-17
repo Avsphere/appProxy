@@ -339,7 +339,6 @@ function Run-Main {
            }
         }
     }
-
     Process {
         $configData = Build-AppProxyConfiguration
         $configData.checkedConnector = $Global:metaData.checkConnector
@@ -351,9 +350,7 @@ function Run-Main {
             $fileContent = 'var configDiscoveryData = ' + $jsonData
             New-Item -Path ($dirPath + '\data\configDiscoveryData.js') -type file -Value $fileContent -Force
         }
-
     }
-
 }
 
 $runCommand = "Run-Main"
