@@ -463,12 +463,10 @@ class ViewBuilder {
     })
 
   }
-
   resizeModal() {
     let maxModalHeight = $(window).height() - 300;
     $('#detailModal .modal-body').css('max-height', maxModalHeight + 'px')
   }
-
   buildView() {
     console.log("Analysis", this.analysis)
     let htmlTable = this.buildTable( this.analysis.analyzedSites );
@@ -479,7 +477,6 @@ class ViewBuilder {
     this.resizeModal();
     this.handles();
   }
-
   buildHeadlessView() {
     function rebuildBody() {
       let baseHtml = `<!-- Begin page content -->
@@ -547,6 +544,4 @@ class ViewBuilder {
     this.handles();
 
   }
-
-
 }
