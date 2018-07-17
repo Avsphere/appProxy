@@ -366,5 +366,3 @@ if ( $PSBoundParameters.ContainsKey('onlyJson') -eq $true ) {
 }
 
  iex $runCommand
-
- start chrome .\index.html

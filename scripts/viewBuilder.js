@@ -12,8 +12,7 @@ class ViewBuilder {
     let that = this;
     function determineProgressColor( score ) {
       if ( score < 50 ) { return 'bg-danger'; }
-      else if ( score < 70 ) { return 'bg-warning'; }
-      else if ( score < 90 ) { return 'bg-success'; }
+      else if ( score < 75 ) { return 'amber bg-success'; }
       else { return ''; }
     }
     function createRow( analyzedSite ) {
@@ -78,9 +77,9 @@ class ViewBuilder {
       if ( check.status === 'correct' ) {
         html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${itemText}<span class="badge badge-primary badge-pill">✓</span></a>`
       } else if ( check.status === 'warning' ) {
-          html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${itemText}<span class="badge badge-warning badge-pill">Warning</span></a>`
+          html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${itemText}<span class="badge badge-warning badge-pill"><i class="fas fa-question"></i></span></a>`
       } else {
-          html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${itemText}<span class="badge badge-danger badge-pill">X</span></a>`
+          html = `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center detailedItem" data-details="${check.details}">${itemText}<span class="badge badge-danger badge-pill"><i class="fas fa-exclamation"></i></span></a>`
       }
       return html;
     }
@@ -163,10 +162,11 @@ class ViewBuilder {
   spawnModal( siteOrApp , type) {
     function siteModalBody() {
       let site = siteOrApp.site;
-      function buildSpnTable() {
+      function buildSpnIdentityTable() {
         function createRow( spnNumber, spnValue ) {
           let html = `<tr class='clickable-row'>
-                        <td>SPN #${spnNumber}</td>
+                        <td>${site.appPool.identityType}</td>
+                        <td>${site.appPool.username}</td>
                         <td>${spnValue}</td>
                       </tr>`
           return html;
@@ -174,8 +174,9 @@ class ViewBuilder {
         let html = `<table class="table" id="spnTable">
                         <thead>
                           <tr>
-                            <th>Found SPNs</th>
-                            <th>SPN value</th>
+                            <th>Identity Type</th>
+                            <th>Configured Identity</th>
+                            <th>Existing SPNs</th>
                           </tr>
                         </thead>
                         <tbody>`;
@@ -192,11 +193,13 @@ class ViewBuilder {
 
       }
       function buildBindingsTable() {
-        let bindings = site.bindings;
+        let bindings = site.bindings,
+            addressText = bindings.address === '*' ? '* (Listening on all IPs)' : bindings.address;
+
         let html = `<table class="table" id="bindingsTable">
                         <thead>
                           <tr>
-                            <th>Binding Data</th>
+                            <th>Site Bindings</th>
                             <th></th>
                           </tr>
                           </thead>
@@ -206,12 +209,12 @@ class ViewBuilder {
                               <td>${bindings.port}</td>
                           </tr>
                           <tr class='clickable-row'>
-                              <td>Hostname: </td>
-                              <td>${bindings.hostName}</td>
+                              <td>Address: </td>
+                              <td>${addressText}</td>
                           </tr>
                           <tr class='clickable-row'>
-                              <td>Address: </td>
-                              <td>${bindings.address}</td>
+                              <td>Hostname: </td>
+                              <td>${bindings.hostName}</td>
                           </tr>
                         </tbody></table>
                         `;
@@ -223,9 +226,9 @@ class ViewBuilder {
           let html = '';
           if ( check.status !== 'correct' ) {
             createdCheckCount++;
-            let checkStatusHtml = `<span class="badge badge-warning badge-pill">Warning</span>`;
+            let checkStatusHtml = `<span class="badge badge-warning badge-pill"><i class="fas fa-question"></i></i></span>`;
             if ( check.status === 'incorrect' ) {
-              checkStatusHtml = `<span class="badge badge-danger badge-pill">Incorrect</span>`;
+              checkStatusHtml = `<span class="badge badge-danger badge-pill"><i class="fas fa-exclamation"></i></span>`;
             }
             html = `<tr class='clickable-row'>
                           <td>${check.name}</td>
@@ -239,9 +242,9 @@ class ViewBuilder {
         let html = `<table class="table" id="checksTable">
                         <thead>
                           <tr>
-                            <th>Check Name</th>
+                            <th>Site Check</th>
                             <th>Status</th>
-                            <th>Tip</th>
+                            <th>Possible Solution</th>
                           </tr>
                           </thead>
                           <tbody>
@@ -265,24 +268,24 @@ class ViewBuilder {
         let identityValueRow = '';
         if ( site.appPool.identityType === 'SpecificUser' ) {
           identityValueRow = `<tr class='clickable-row'>
-                                    <td>Identity Value: </td>
+                                    <td>Identity Value</td>
                                     <td>${site.appPool.username}</td>
                               </tr>`
         }
         let html = `<table class="table" id="appPoolTable">
                         <thead>
                           <tr>
-                            <th>App Pool Data</th>
+                            <th>App Pool Settings</th>
                             <th></th>
                           </tr>
                           </thead>
                           <tbody>
                           <tr class='clickable-row'>
-                              <td>App Pool Name:</td>
+                              <td>App Pool Name</td>
                               <td>${site.appPool.name}</td>
                           </tr>
                           <tr class='clickable-row'>
-                              <td>Identity Type: </td>
+                              <td>Identity Type</td>
                               <td>${site.appPool.identityType}</td>
                           </tr>
                           ${identityValueRow}
@@ -291,18 +294,19 @@ class ViewBuilder {
         return html;
       }
       //let html = buildInfoSection();
-      let html = buildSpnTable();
+      let html = buildBindingsTable();
       html += buildAppPoolTable();
-      html += buildBindingsTable();
+      html += buildSpnIdentityTable();
       html += buildSiteCheckTable();
       return html;
     }
     function appModalBody() {
       let app = siteOrApp.app;
-      function buildSpnTable() {
+      function buildSpnIdentityTable() {
         function createRow( spnNumber, spnValue ) {
           let html = `<tr class='clickable-row'>
-                        <td>SPN #${spnNumber}</td>
+                        <td>${app.appPool.identityType}</td>
+                        <td>${app.appPool.username}</td>
                         <td>${spnValue}</td>
                       </tr>`
           return html;
@@ -310,8 +314,9 @@ class ViewBuilder {
         let html = `<table class="table" id="spnTable">
                         <thead>
                           <tr>
-                            <th>Found SPNs</th>
-                            <th>SPN value</th>
+                          <th>Identity Type</th>
+                          <th>Configured Identity</th>
+                          <th>Existing SPNs</th>
                           </tr>
                         </thead>
                         <tbody>`;
@@ -321,15 +326,44 @@ class ViewBuilder {
         html += `</tbody></table>`
         return html;
       }
+      function buildAppPoolTable() {
+        let identityValueRow = '';
+        if ( app.appPool.identityType === 'SpecificUser' ) {
+          identityValueRow = `<tr class='clickable-row'>
+                                    <td>Identity Value</td>
+                                    <td>${app.appPool.username}</td>
+                              </tr>`
+        }
+        let html = `<table class="table" id="appPoolTable">
+                        <thead>
+                          <tr>
+                            <th>App Pool Settings</th>
+                            <th></th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          <tr class='clickable-row'>
+                              <td>App Pool Name</td>
+                              <td>${app.appPool.name}</td>
+                          </tr>
+                          <tr class='clickable-row'>
+                              <td>Identity Type</td>
+                              <td>${app.appPool.identityType}</td>
+                          </tr>
+                          ${identityValueRow}
+                        </tbody></table>
+                        `;
+        return html;
+      }
       function buildAppCheckTable() {
         let createdCheckCount = 0;
         function createRow( check ) {
           let html = '';
           if ( check.status !== 'correct' ) {
             createdCheckCount++;
-            let checkStatusHtml = `<span class="badge badge-warning badge-pill">Warning</span>`;
+            let checkStatusHtml = `<span class="badge badge-warning badge-pill"><i class="fas fa-question"></i></span>`;
             if ( check.status === 'incorrect' ) {
-              checkStatusHtml = `<span class="badge badge-danger badge-pill">Incorrect</span>`;
+              checkStatusHtml = `<span class="badge badge-danger badge-pill"><i class="fas fa-exclamation"></i></span>`;
             }
             html = `<tr class='clickable-row'>
                           <td>${check.name}</td>
@@ -343,9 +377,9 @@ class ViewBuilder {
         let html = `<table class="table" id="checksTable">
                         <thead>
                           <tr>
-                            <th>Check Name</th>
+                            <th>App Check</th>
                             <th>Status</th>
-                            <th>Tip</th>
+                            <th>Possible Solution</th>
                           </tr>
                           </thead>
                           <tbody>
@@ -366,7 +400,8 @@ class ViewBuilder {
         return html;
       }
       //let html = buildInfoSection();
-      let html = buildSpnTable();
+      let html = buildAppPoolTable();
+      html += buildSpnIdentityTable();
       html += buildAppCheckTable();
       return html;
     }
@@ -382,14 +417,11 @@ class ViewBuilder {
       $('.modal-title').text(modalTitle)
       $('.modal-body').html( appModalBody() )
     }
-
+    $('#detailModal').data('currentData', siteOrApp);
     $('#detailModal').modal({})
   }
   handles() {
     let that = this;
-    $('#autoPubBtn').on('click', (el) => {
-      window.location.href = './autoPub.html'
-    })
     function setDetailedItemsHandle(){
       $('.detailedItem').on('click', (el) => {
         let parent = $(el.target).parent(),
@@ -446,7 +478,28 @@ class ViewBuilder {
 
 
     }
+    function download(filename, text) {
+      var element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', filename);
 
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+
+      document.body.removeChild(element);
+    }
+    $('#autoPubBtn').on('click', (el) => {
+      window.location.href = './autoPub.html'
+    })
+    $('#downloadJson').on('click', (el) => {
+      let currentData = $('#detailModal').data('currentData'),
+          siteOrAppName = currentData.siteName || currentData.app.appName,
+          filename = siteOrAppName.split(' ').join('_') + '.json',
+          jsonData = JSON.stringify(currentData);
+      download(filename, jsonData);
+    })
     $('.clickable-row').on('click', (el) => {
       let clickedRow = $(el.target).closest('.clickable-row'),
           siteName = clickedRow.find('.siteName').text(),
@@ -464,7 +517,7 @@ class ViewBuilder {
 
   }
   resizeModal() {
-    let maxModalHeight = $(window).height() - 300;
+    let maxModalHeight = $(window).height() - 200;
     $('#detailModal .modal-body').css('max-height', maxModalHeight + 'px')
   }
   buildView() {

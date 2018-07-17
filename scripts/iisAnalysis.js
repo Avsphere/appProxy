@@ -83,8 +83,8 @@ class WindowsAnalysis {
       checks.push( new ConfigCheck({
         name : 'Both useKernelMode and useAppPoolCredentials are true',
         value : '',
-        status : 'incorrect',
-        details : 'This is incorrect as it will always default to useAppPoolCredentials if available, and if it is not then just useKernelMode should be set'
+        status : 'warning',
+        details : 'This configuration can yield unpredictable results, so either use an SPN that is defined against the Identity discovered in the above table, or consider setting useAppPoolCredentials to false, and using an SPN defined against the machine object, in AD'
       }))
       }
       if ( useAppPoolCredentials && identityType === 'SpecificUser' ) {

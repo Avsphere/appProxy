@@ -27,7 +27,7 @@
     </header>
 
     <!-- Begin page content -->
-    <main role="main" class="container" style="margin-left:12%">
+    <main role="main" class="container-fluid" style="">
       <div class="modal" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:800px">
           <div class="modal-content">
@@ -40,18 +40,21 @@
             <div class="modal-body" style="overflow-y:scroll;">
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-primary">Download JSON <i class="fas fa-download"></i></button>
+              <button type="button" class="btn btn-primary" id="downloadJson">Download JSON <i class="fas fa-download"></i></button>
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
           </div>
         </div>
       </div>
-      <h1 class="mt-5" id="serverName"></h1>
-      <h5 id="iisVersion"></h5>
-      <h5 id="osInfo"></h5>
+      <div class="baseInfo">
+        <h1 class="mt-5" id="serverName"></h1>
+        <h5 id="iisVersion"></h5>
+        <h5 id="osInfo"></h5>
+      </div>
+
       <br>
       <br>
-      <div class="container" style="max-width:1400px">
+      <div class="container" style="max-width:1400px; margin-top:2%">
         <div class="row">
           <div class="col-sm">
             <div id="siteTable">
