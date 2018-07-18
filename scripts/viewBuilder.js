@@ -165,7 +165,6 @@ class ViewBuilder {
       function buildSpnIdentityTable() {
         function createRow( spnNumber, spnValue ) {
           let html = `<tr class='clickable-row'>
-                        <td>${site.appPool.identityType}</td>
                         <td>${site.appPool.username}</td>
                         <td>${spnValue}</td>
                       </tr>`
@@ -174,7 +173,6 @@ class ViewBuilder {
         let html = `<table class="table" id="spnTable">
                         <thead>
                           <tr>
-                            <th>Identity Type</th>
                             <th>Configured Identity</th>
                             <th>Existing SPNs</th>
                           </tr>
@@ -265,11 +263,11 @@ class ViewBuilder {
         return html;
       }
       function buildAppPoolTable() {
-        let identityValueRow = '';
-        if ( site.appPool.identityType === 'SpecificUser' ) {
-          identityValueRow = `<tr class='clickable-row'>
-                                    <td>Identity Value</td>
-                                    <td>${site.appPool.username}</td>
+        let identityClassRow = '';
+        if ( site.appPool.identityObjectClass ) {
+          identityClassRow = `<tr class='clickable-row'>
+                                    <td>Identity Object Class</td>
+                                    <td>${site.appPool.identityObjectClass}</td>
                               </tr>`
         }
         let html = `<table class="table" id="appPoolTable">
@@ -288,7 +286,11 @@ class ViewBuilder {
                               <td>Identity Type</td>
                               <td>${site.appPool.identityType}</td>
                           </tr>
-                          ${identityValueRow}
+                          ${identityClassRow}
+                          <tr class='clickable-row'>
+                              <td>Identity Value</td>
+                              <td>${site.appPool.username}</td>
+                        </tr>
                         </tbody></table>
                         `;
         return html;
@@ -305,7 +307,6 @@ class ViewBuilder {
       function buildSpnIdentityTable() {
         function createRow( spnNumber, spnValue ) {
           let html = `<tr class='clickable-row'>
-                        <td>${app.appPool.identityType}</td>
                         <td>${app.appPool.username}</td>
                         <td>${spnValue}</td>
                       </tr>`
@@ -314,7 +315,6 @@ class ViewBuilder {
         let html = `<table class="table" id="spnTable">
                         <thead>
                           <tr>
-                          <th>Identity Type</th>
                           <th>Configured Identity</th>
                           <th>Existing SPNs</th>
                           </tr>
@@ -327,11 +327,11 @@ class ViewBuilder {
         return html;
       }
       function buildAppPoolTable() {
-        let identityValueRow = '';
-        if ( app.appPool.identityType === 'SpecificUser' ) {
-          identityValueRow = `<tr class='clickable-row'>
-                                    <td>Identity Value</td>
-                                    <td>${app.appPool.username}</td>
+        let identityClassRow = '';
+        if ( app.appPool.identityObjectClass ) {
+          identityClassRow = `<tr class='clickable-row'>
+                                    <td>Identity Object Class</td>
+                                    <td>${app.appPool.identityObjectClass}</td>
                               </tr>`
         }
         let html = `<table class="table" id="appPoolTable">
@@ -350,7 +350,11 @@ class ViewBuilder {
                               <td>Identity Type</td>
                               <td>${app.appPool.identityType}</td>
                           </tr>
-                          ${identityValueRow}
+                          ${identityClassRow}
+                          <tr class='clickable-row'>
+                              <td>Identity Value</td>
+                              <td>${app.appPool.username}</td>
+                        </tr>
                         </tbody></table>
                         `;
         return html;
@@ -479,7 +483,7 @@ class ViewBuilder {
 
     }
     function download(filename, text) {
-      var element = document.createElement('a');
+      let element = document.createElement('a');
       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
       element.setAttribute('download', filename);
 

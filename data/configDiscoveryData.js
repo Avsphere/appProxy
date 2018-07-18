@@ -27,7 +27,8 @@ var configDiscoveryData = {
                                                    "http/pseudoprem-iis"
                                                ],
                                       "name":  "aspMaster",
-                                      "identityType":  "SpecificUser"
+                                      "identityType":  "SpecificUser",
+                                      "identityObjectClass":  "user"
                                   },
                       "siteName":  "HR Web",
                       "authentication":  {
@@ -69,7 +70,8 @@ var configDiscoveryData = {
                                                                             "http/pseudoprem-iis"
                                                                         ],
                                                                "name":  "aspMaster",
-                                                               "identityType":  "SpecificUser"
+                                                               "identityType":  "SpecificUser",
+                                                               "identityObjectClass":  "user"
                                                            },
                                                "appName":  "dummyApp",
                                                "authentication":  {
@@ -103,7 +105,8 @@ var configDiscoveryData = {
                                                                             "http/pseudoprem-iis"
                                                                         ],
                                                                "name":  "aspDependent",
-                                                               "identityType":  "SpecificUser"
+                                                               "identityType":  "SpecificUser",
+                                                               "identityObjectClass":  "user"
                                                            },
                                                "appName":  "semiDummyApp",
                                                "authentication":  {
@@ -137,7 +140,8 @@ var configDiscoveryData = {
                                                    "http/pseudoprem-iis"
                                                ],
                                       "name":  "aspDependent",
-                                      "identityType":  "SpecificUser"
+                                      "identityType":  "SpecificUser",
+                                      "identityObjectClass":  "user"
                                   },
                       "siteName":  "Payroll Manager",
                       "authentication":  {
@@ -166,7 +170,8 @@ var configDiscoveryData = {
                                                    "host/pseudoprem-iis.loluvw.xyz"
                                                ],
                                       "name":  "formsExample",
-                                      "identityType":  "ApplicationPoolIdentity"
+                                      "identityType":  "ApplicationPoolIdentity",
+                                      "identityObjectClass":  "computer"
                                   },
                       "applications":  {
                                            "appPool":  {
@@ -176,7 +181,8 @@ var configDiscoveryData = {
                                                                         "host/pseudoprem-iis.loluvw.xyz"
                                                                     ],
                                                            "name":  "basicAspDemo",
-                                                           "identityType":  "ApplicationPoolIdentity"
+                                                           "identityType":  "ApplicationPoolIdentity",
+                                                           "identityObjectClass":  "computer"
                                                        },
                                            "appName":  "sillyApp",
                                            "authentication":  {
@@ -221,7 +227,8 @@ var configDiscoveryData = {
                                       "username":  "LOLUVW\\bad-service",
                                       "spns":  null,
                                       "name":  "misconfiguredSite",
-                                      "identityType":  "SpecificUser"
+                                      "identityType":  "SpecificUser",
+                                      "identityObjectClass":  null
                                   },
                       "siteName":  "Save Whales",
                       "authentication":  {
@@ -263,7 +270,8 @@ var configDiscoveryData = {
                                                                             "host/pseudoprem-iis.loluvw.xyz"
                                                                         ],
                                                                "name":  "badlyMisconfiguredSite",
-                                                               "identityType":  "LocalService"
+                                                               "identityType":  "LocalService",
+                                                               "identityObjectClass":  "computer"
                                                            },
                                                "appName":  "badApp",
                                                "authentication":  {
@@ -300,7 +308,8 @@ var configDiscoveryData = {
                                                                             "host/pseudoprem-iis.loluvw.xyz"
                                                                         ],
                                                                "name":  ".NET v2.0",
-                                                               "identityType":  "ApplicationPoolIdentity"
+                                                               "identityType":  "ApplicationPoolIdentity",
+                                                               "identityObjectClass":  "computer"
                                                            },
                                                "appName":  "terribleApp",
                                                "authentication":  {
@@ -337,7 +346,8 @@ var configDiscoveryData = {
                                                    "host/pseudoprem-iis.loluvw.xyz"
                                                ],
                                       "name":  "badlyMisconfiguredSite",
-                                      "identityType":  "LocalService"
+                                      "identityType":  "LocalService",
+                                      "identityObjectClass":  "computer"
                                   },
                       "siteName":  "Conspiracy Central",
                       "authentication":  {

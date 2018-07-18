@@ -9,6 +9,10 @@ function ConfigCheck( resultData ) {
   })
 }
 
+function camelToTitleCase( stringValue ){
+  return stringValue.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1")
+}
+
 class WindowsAnalysis {
   constructor( api ) {
     this.api = api;
@@ -62,7 +66,7 @@ class WindowsAnalysis {
         runWIAChecks = true;
         checks.push( new ConfigCheck({
           name : 'Authentication',
-          value : 'windowsAuthentication',
+          value : 'Windows Authentication',
           status : 'correct',
           details : 'None'
         }))
@@ -89,7 +93,7 @@ class WindowsAnalysis {
       }
       if ( useAppPoolCredentials && identityType === 'SpecificUser' ) {
         checks.push( new ConfigCheck({
-          name : 'Identity type is SpecificUser and useAppPoolCredentials is true',
+          name : 'Identity type is Custom Account and useAppPoolCredentials is true',
           value : '',
           status : 'correct',
           details : 'None'
@@ -103,7 +107,7 @@ class WindowsAnalysis {
           }))
       } else if ( !useAppPoolCredentials && identityType === 'SpecificUser' ) {
           checks.push( new ConfigCheck({
-            name : 'Identity type is SpecificUser and useAppPoolCredentials is false',
+            name : 'Identity type is Custom Account and useAppPoolCredentials is false',
             value : useAppPoolCredentials,
             status : 'incorrect',
             details : 'If trying to configure KCD this should be true so that the application pool identity can recieve tickets on behalf of the application'
@@ -146,12 +150,15 @@ class WindowsAnalysis {
     let checks = [],
         spns = appPool.spns,
         checkValue = appPool.username;
-    if ( appPool.identityType === 'ApplicationPoolIdentity') {
+    if ( appPool.identityType === 'ApplicationPoolIdentity' ||
+         appPool.identityType === 'LocalService' ||
+         appPool.identityType === 'LocalSystem' ||
+         appPool.identityType === 'NetworkService' ) {
       checks.push( new ConfigCheck({
         name : 'Identity Type is ',
-        value : appPool.identityType,
+        value : camelToTitleCase(appPool.identityType),
         status : 'warning',
-        details : 'Generally one would would find this to be set to SpecificUser'
+        details : 'Generally one would would find this to be set to Custom Account with a configured service account'
       }))
     } else if ( appPool.identityType === 'SpecificUser' ) {
       /* This check is repetive' */
@@ -166,7 +173,7 @@ class WindowsAnalysis {
         name : 'Identity Type is ',
         value : appPool.identityType,
         status : 'incorrect',
-        details : 'None'
+        details : 'The identity type is not recognized.'
       }))
     }
     if ( spns && spns.length > 0 ) {
@@ -225,7 +232,7 @@ class WindowsAnalysis {
             name : 'Delegation Check',
             value : item.spn + ' does not exist in the connector',
             status : 'incorrect',
-            details : 'The connector is properly configured to delegationTo but does not have the target SPN'
+            details : `The connector is properly configured to delegationTo but does not have the target SPN: ${item.spn}`
           }))
         } else {
           checks.push( new ConfigCheck({
