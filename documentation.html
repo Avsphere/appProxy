@@ -136,22 +136,32 @@
                                     </p>
                                     <div class="code-block">
                                         <h6>If you have already setup your connector:</h6>
-                                        <p><code>configurationDiscovery -connectorServerName "[put connector name here]"</code></p>
+                                        <p><code>configurationDiscovery -connectorName "[connector server name here]"</code></p>
                                         <h6>If you have NOT setup your connector:</h6>
                                         <p><code>configurationDiscovery</code></p>
                                         <h6>If you would just like the JSON output:</h6>
-                                        <p><code>configurationDiscovery -onlyJson</code></p>
+                                        <p><code>configurationDiscovery -onlyJson "true"</code></p>
+                                        <h6>If you would just like to point to the root directory</h6>
+                                        <p><code>configurationDiscovery -dirPath "[path to source]"</code></p>
                                     </div><!--//code-block-->
+                                    <p>
+                                      Now open the index.html file in edge or chrome to interact with the analysis GUI. The parsed configuration data is stored in the data/ directory.
+                                    </p>
                                 </div><!--//section-block-->
                                 <div id="step2"  class="section-block">
-                                    <h3 class="block-title">Next Steps</h3>
-                                    <p>Very wise and important information
+                                    <h3 class="block-title">In Development</h3>
+                                    <p>
+                                      The auto generation feature has just been added, though it should theoretically be able to validate the input by querying Azure AD after authentication.
+                                    </p>
+                                    <p>
+                                      The configuration checks are nearing their MVP final update. The "possible solutions" should soon supply links to the actual documentation
                                     </p>
 
                                 </div><!--//section-block-->
                                 <div id="step3"  class="section-block">
                                     <h3 class="block-title">What's Next</h3>
-                                    <p>Even wiser and more important information regarding what to do next
+                                    <p>
+                                      Currently this tool has not been tested outside of lab environments, the idea is that after trial runs additional improvments should be made.
                                     </p>
                                 </div><!--//section-block-->
                             </section><!--//doc-section-->
