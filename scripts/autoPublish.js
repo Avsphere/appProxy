@@ -49,7 +49,7 @@ class AutoPublish {
       } else {
         return '';
       }
-    } 
+    }
     function createSiteRow( analyzedSite,  parentId) {
       let readinessScore = analyzedSite.readinessScore.toPrecision(3),
           appCount = analyzedSite.analyzedApps.length,
@@ -316,6 +316,10 @@ class AutoPublish {
     $('#publishBtn').on('click', () => {
       spawnModal( that.generatePublishScript() )
     });
+
+    $('.dropdown-item').on('click', (el) => {
+      el.preventDefault();
+    })
 
   }
 
