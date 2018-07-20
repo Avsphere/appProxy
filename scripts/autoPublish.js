@@ -159,9 +159,9 @@ class AutoPublish {
         }
 
         let scriptBlock = `
-        $connectorGroup = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq ${blob.connectorGroup}}
-        New-AzureADApplicationProxyApplication -DisplayName ${blob.siteName} -InternalUrl ${blob.internalUrl} -ConnectorGroupId $connectorGroup.id -ExternalUrl ${externalUrl} -ExternalAuthenticationType AadPreAuthentication
-        $AppProxyApp1=Get-AzureADApplication  | where-object {$_.Displayname -eq ${blob.siteName}}
+        $connectorGroup = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "${blob.connectorGroup}"}
+        New-AzureADApplicationProxyApplication -DisplayName "${blob.siteName}" -InternalUrl "${blob.internalUrl}" -ConnectorGroupId $connectorGroup.id -ExternalUrl "${externalUrl}" -ExternalAuthenticationType AadPreAuthentication
+        $AppProxyApp1=Get-AzureADApplication  | where-object {$_.Displayname -eq "${blob.siteName}"}
         Set-AzureADApplicationProxyApplicationSingleSignOn -ObjectId $AppProxyApp1.Objectid -SingleSignOnMode OnPremisesKerberos -KerberosInternalApplicationServicePrincipalName ${blob.chosenSpn} -KerberosDelegatedLoginIdentity OnPremisesUserPrincipalName
         `;
 
@@ -190,7 +190,6 @@ class AutoPublish {
     relevantRows =  parents.concat(children);
 
     let dataBlobs = relevantRows.map( row => pullDataFromRow(row) )
-    console.log( dataBlobs );
     return buildPsScript( dataBlobs )
   }
 
@@ -225,8 +224,6 @@ class AutoPublish {
       let tableRows = $('#siteTable').find('tr').toArray(),
           parentRow = $('#' + $(clickedChild).attr('data-parentId') ),
           childrenIds = parentRow.data('children').map( c =>  $(c).attr('id') );
-
-      console.log(parentRow, childrenIds);
       if ( $(clickedChild).hasClass('table-primary') ) {
         $(clickedChild).removeClass('table-primary');
         //Also deselect parent if parent was selected
