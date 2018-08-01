@@ -261,7 +261,7 @@ class WindowsAnalysis {
         } else if ( item.trustedToAuthForDelegation && !item.targetSpnInConnector ) {
           checks.push( new ConfigCheck({
             name : 'Delegation Check',
-            value : 'The spn' + item.spn + ' does not exist in the connector delegation tab',
+            value : 'The spn ' + item.spn + ' does not exist in the connector delegation tab',
             status : 'incorrect',
             detailsHtml : `<p> ${item.spn} does not exist in the connector delegation configuration but this connector machine is trusted for delegation, find the instructions <a target="_blank" href="https://docs.microsoft.com/en-us/azure/active-directory/manage-apps/application-proxy-configure-single-sign-on-with-kcd"> here </a> </p>`,
             docRef : 'E4'
