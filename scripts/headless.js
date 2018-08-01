@@ -1,6 +1,5 @@
 $(function() {
   const configData = configDiscoveryData;
-
   function init() {
     squares()
     $('#customFile').on('change', function() {
@@ -10,7 +9,6 @@ $(function() {
         let reader = new FileReader();
         reader.onload = function(e) {
           let jsonData = reader.result;
-          console.log(jsonData)
           processData( jsonData );
         }
         reader.readAsText( document.getElementById('customFile').files[0] )
@@ -19,7 +17,6 @@ $(function() {
       }
     })
   }
-
   function processData( configData ) {
     let parsedData = JSON.parse(configData);
     let configApi = new ConfigApi(parsedData);

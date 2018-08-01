@@ -2,7 +2,6 @@ class ConfigApi {
   constructor( rawData ) {
     this.rawData = rawData
   }
-
   getSiteNames() {
     return this.rawData.sites.map( (s) => { return s.siteName; })
   }
@@ -28,14 +27,9 @@ class ConfigApi {
     let site = this.getSite(siteName);
     return site.applications;
   }
-
   getAuthNames( siteOrApp ) {
     if ( !siteOrApp.hasOwnProperty('authentication') ) { throw new "getAuth cannot find authentication property" }
     return Object.keys(siteOrApp.authentication)
   }
-
-
-
-
 
 }

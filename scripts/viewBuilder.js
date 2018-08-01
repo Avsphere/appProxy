@@ -17,16 +17,21 @@ class ViewBuilder {
     }
     function createRow( analyzedSite ) {
       let readinessScore = analyzedSite.readinessScore.toPrecision(3),
+          readinessText = readinessScore,
           appCount = analyzedSite.analyzedApps.length,
           bindings = analyzedSite.site.bindings;
       let url = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port;
       if ( bindings.hostName.length === 0 ) { url = ''; }
-
       let progressColor = determineProgressColor( readinessScore );
+      if ( !analyzedSite.site.authentication.hasOwnProperty('windowsAuthentication') ) {
+        progressColor = 'dull bg-success';
+        readinessScore = 100;
+        readinessText = 'Non WIA'
+      }
       let progressHtml = `
       <div class="progress">
         <div class="progress-bar ${progressColor} progress-bar-striped" role="progressbar" aria-valuenow="${readinessScore}%" aria-valuemin="0" aria-valuemax="100" style="width:${readinessScore}%">
-          ${readinessScore}
+          ${readinessText}
         </div>
       </div>`
       let html = `<tr class='clickable-row'>
@@ -87,6 +92,9 @@ class ViewBuilder {
     function buildSiteSection() {
       function buildSiteTitle() {
         let readinessScore = clickedSite.readinessScore.toPrecision(3);
+        if ( !clickedSite.site.authentication.hasOwnProperty('windowsAuthentication') ){
+          readinessScore = 'Non WIA'
+        }
         let html = `
         <div class="row">
           <div class="col" style="white-space: nowrap;">
@@ -155,7 +163,7 @@ class ViewBuilder {
                   <p> Click a site in the table to the left to reveal its configuration settings in the context of Application Proxy</p>
                   <p> Once a site has been clicked you can select one of the list items for a more detailed view / publication script </p>
                   <p>Use the readiness score to quickly gauge what sites or apps likely need the most work.</p>
-
+                  <p>**Note that the readiness score is a heuristic</p>
                 </div>`
     return html;
   }
@@ -231,7 +239,7 @@ class ViewBuilder {
             html = `<tr class='clickable-row'>
                           <td>${check.name}</td>
                           <td>${checkStatusHtml}</td>
-                          <td>${check.details}</td>
+                          <td>${check.detailsHtml}</td>
                         </tr>`
           }
           return html;

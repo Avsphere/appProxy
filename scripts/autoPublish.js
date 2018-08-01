@@ -53,8 +53,10 @@ class AutoPublish {
     function createSiteRow( analyzedSite,  parentId) {
       let readinessScore = analyzedSite.readinessScore.toPrecision(3),
           appCount = analyzedSite.analyzedApps.length,
+          siteType = 'forms',
           bindings = analyzedSite.site.bindings;
       if ( bindings.hostName.length === 0 ) { bindings.hostName = 'localhost' }
+      if ( Object.keys(analyzedSite.site.authentication).includes('windowsAuthentication') ) { siteType = 'wia'; }
       let internalUrl = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port;
       let progressColor = determineProgressColor( readinessScore );
       let progressHtml = `
@@ -63,7 +65,7 @@ class AutoPublish {
           ${readinessScore}
         </div>
       </div>`
-      let html = `<tr class='clickable-row siteRow' id=${parentId} data-internalUrl="${internalUrl}">
+      let html = `<tr class='clickable-row siteRow' id=${parentId} data-type=${siteType} data-internalUrl="${internalUrl}">
                     <td class="siteName">${analyzedSite.siteName}</td>
                     <td>${progressHtml}</td>
                     <td class="chosenSpn">${buildSpnDropdown(analyzedSite.site.appPool.spns)}</td>
@@ -75,13 +77,16 @@ class AutoPublish {
     function createAppRow( app, siteName, internalUrl, childId, parentId ) {
       let readinessScore = app.readinessScore.toPrecision(3),
           progressColor = determineProgressColor( readinessScore ),
+          appType = 'forms',
           progressHtml = `
         <div class="progress">
           <div class="progress-bar ${progressColor} progress-bar-striped" role="progressbar" aria-valuenow="${readinessScore}%" aria-valuemin="0" aria-valuemax="100" style="width:${readinessScore}%">
             ${readinessScore}
           </div>
         </div>`
-      let html = `<tr class='clickable-row' id="${childId}" data-parentId=${parentId} data-internalUrl=${internalUrl}>
+
+      if ( Object.keys(app.app.authentication).includes('windowsAuthentication') ) { appType = 'wia'; }
+      let html = `<tr class='clickable-row' id="${childId}" data-type=${appType} data-parentId=${parentId} data-internalUrl=${internalUrl}>
                     <td class="siteName">${siteName}/${app.app.appName}</td>
                     <td>${progressHtml}</td>
                     <td class="chosenSpn">${buildSpnDropdown(app.app.appPool.spns)}</td>
@@ -141,7 +146,8 @@ class AutoPublish {
         chosenSpn : $(row).find('td.chosenSpn').find('.dropdown-toggle').text().trim(),
         connectorGroup : $(row).find('td.connectorCol input').val(),
         tenantName : $(row).find('td.tenantName input').val(),
-        internalUrl : $(row).attr('data-internalUrl')
+        internalUrl : $(row).attr('data-internalUrl'),
+        itemType : $(row).attr('data-type')
       }
       if ( $(row).hasClass('siteRow') ) {
         dataBlob.type = 'site';
@@ -158,13 +164,14 @@ class AutoPublish {
           externalUrl += pathDirs.join('/') + '/'
         }
 
+        let externalAuthType = blob.itemType === 'forms' ? 'Passthru' : 'AadPreAuthentication';
+
         let scriptBlock = `
         $connectorGroup = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "${blob.connectorGroup}"}
-        New-AzureADApplicationProxyApplication -DisplayName "${blob.siteName}" -InternalUrl "${blob.internalUrl}" -ConnectorGroupId $connectorGroup.id -ExternalUrl "${externalUrl}" -ExternalAuthenticationType AadPreAuthentication
+        New-AzureADApplicationProxyApplication -DisplayName "${blob.siteName}" -InternalUrl "${blob.internalUrl}" -ConnectorGroupId $connectorGroup.id -ExternalUrl "${externalUrl}" -ExternalAuthenticationType ${externalAuthType}
         $AppProxyApp1=Get-AzureADApplication  | where-object {$_.Displayname -eq "${blob.siteName}"}
         Set-AzureADApplicationProxyApplicationSingleSignOn -ObjectId $AppProxyApp1.Objectid -SingleSignOnMode OnPremisesKerberos -KerberosInternalApplicationServicePrincipalName ${blob.chosenSpn} -KerberosDelegatedLoginIdentity OnPremisesUserPrincipalName
         `;
-
         psScript += '\n' + scriptBlock;
       })
       return psScript;
@@ -178,15 +185,15 @@ class AutoPublish {
       }
     })
 
-    //Remove children that are encapsulated by parent publishing
-    parents.forEach( (p) => {
-      let childrenIds = $(p).data('children').map( c => $(c).attr('id') );
-      children = children.filter( (c) => {
-        if ( !childrenIds.includes( $(c).attr('id') ) ) {
-          return c;
-        }
-      })
-    })
+    /*Remove children that are encapsulated by parent publishing --- Like the highlighting this has currently been commented our to allow more cusomtizability */
+    // parents.forEach( (p) => {
+    //   let childrenIds = $(p).data('children').map( c => $(c).attr('id') );
+    //   children = children.filter( (c) => {
+    //     if ( !childrenIds.includes( $(c).attr('id') ) ) {
+    //       return c;
+    //     }
+    //   })
+    // })
     relevantRows =  parents.concat(children);
 
     let dataBlobs = relevantRows.map( row => pullDataFromRow(row) )
@@ -197,26 +204,22 @@ class AutoPublish {
   handles() {
     let that = this;
     function toggleSiteRow( clickedRow ) {
-      //first reset current selection
+      //The auto selection / deselection of children reduces user power and so has been currently commented out
       let tableRows = $('#siteTable').find('tr').toArray(),
           childrenIds = $(clickedRow).data('children').map( c =>  $(c).attr('id') )
-
       if ( $(clickedRow).hasClass('table-primary') ) {
-        //If a site is selected again, deselect all the children
-        childrenIds.forEach( (c) => {
-          let $child = $('#' + c);
-          if ( $child.hasClass('table-primary') ) { $child.removeClass('table-primary') }
-        })
+        // childrenIds.forEach( (c) => {
+        //   let $child = $('#' + c);
+        //   if ( $child.hasClass('table-primary') ) { $child.removeClass('table-primary') }
+        // })
         $(clickedRow).removeClass('table-primary');
-
       } else {
         $(clickedRow).addClass('table-primary');
-
         //In this case we should also select all of its children
-        childrenIds.forEach( (c) => {
-          let $child = $('#' + c);
-          if ( !$child.hasClass('table-primary') ) { $child.addClass('table-primary') }
-        })
+        // childrenIds.forEach( (c) => {
+        //   let $child = $('#' + c);
+        //   if ( !$child.hasClass('table-primary') ) { $child.addClass('table-primary') }
+        // })
       }
     }
     function toggleAppRow( clickedChild ) {
@@ -226,8 +229,7 @@ class AutoPublish {
           childrenIds = parentRow.data('children').map( c =>  $(c).attr('id') );
       if ( $(clickedChild).hasClass('table-primary') ) {
         $(clickedChild).removeClass('table-primary');
-        //Also deselect parent if parent was selected
-        if ( $(parentRow).hasClass('table-primary') ) { $(parentRow).removeClass('table-primary'); }
+        //if ( $(parentRow).hasClass('table-primary') ) { $(parentRow).removeClass('table-primary'); }
       } else {
         //Select child but also check if siblings are selected.
         $(clickedChild).addClass('table-primary');
@@ -236,11 +238,9 @@ class AutoPublish {
           let $child = $('#' + c);
           if ( $child.hasClass('table-primary') ) { childSelectedCount++; }
         })
-
-        if ( childSelectedCount === childrenIds.length ) {
-          $(parentRow).addClass('table-primary');
-
-        }
+        // if ( childSelectedCount === childrenIds.length ) {
+        //   $(parentRow).addClass('table-primary');
+        // }
       }
     }
     function download(filename, text) {

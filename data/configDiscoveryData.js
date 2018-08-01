@@ -27,8 +27,7 @@ var configDiscoveryData = {
                                                    "http/pseudoprem-iis"
                                                ],
                                       "name":  "aspMaster",
-                                      "identityType":  "SpecificUser",
-                                      "identityObjectClass":  "user"
+                                      "identityType":  "SpecificUser"
                                   },
                       "siteName":  "HR Web",
                       "authentication":  {
@@ -70,8 +69,7 @@ var configDiscoveryData = {
                                                                             "http/pseudoprem-iis"
                                                                         ],
                                                                "name":  "aspMaster",
-                                                               "identityType":  "SpecificUser",
-                                                               "identityObjectClass":  "user"
+                                                               "identityType":  "SpecificUser"
                                                            },
                                                "appName":  "dummyApp",
                                                "authentication":  {
@@ -105,8 +103,7 @@ var configDiscoveryData = {
                                                                             "http/pseudoprem-iis"
                                                                         ],
                                                                "name":  "aspDependent",
-                                                               "identityType":  "SpecificUser",
-                                                               "identityObjectClass":  "user"
+                                                               "identityType":  "SpecificUser"
                                                            },
                                                "appName":  "semiDummyApp",
                                                "authentication":  {
@@ -140,8 +137,7 @@ var configDiscoveryData = {
                                                    "http/pseudoprem-iis"
                                                ],
                                       "name":  "aspDependent",
-                                      "identityType":  "SpecificUser",
-                                      "identityObjectClass":  "user"
+                                      "identityType":  "SpecificUser"
                                   },
                       "siteName":  "Payroll Manager",
                       "authentication":  {
@@ -156,23 +152,24 @@ var configDiscoveryData = {
                                          }
                   },
                   {
-                      "siteName":  "FaceBook 2.0",
                       "bindings":  {
                                        "port":  "80",
                                        "protocol":  "http",
                                        "hostName":  "facebookv2",
                                        "address":  "*"
                                    },
-                      "appPool":  {
-                                      "username":  "PSEUDOPREM-IIS",
-                                      "spns":  [
-                                                   "host/pseudoprem-iis",
-                                                   "host/pseudoprem-iis.loluvw.xyz"
-                                               ],
-                                      "name":  "formsExample",
-                                      "identityType":  "ApplicationPoolIdentity",
-                                      "identityObjectClass":  "computer"
-                                  },
+                      "delegationSettings":  [
+                                                 {
+                                                     "spn":  "host/pseudoprem-iis",
+                                                     "trustedToAuthForDelegation":  true,
+                                                     "targetSpnInConnector":  false
+                                                 },
+                                                 {
+                                                     "spn":  "host/pseudoprem-iis.loluvw.xyz",
+                                                     "trustedToAuthForDelegation":  true,
+                                                     "targetSpnInConnector":  false
+                                                 }
+                                             ],
                       "applications":  {
                                            "appPool":  {
                                                            "username":  "PSEUDOPREM-IIS",
@@ -181,8 +178,7 @@ var configDiscoveryData = {
                                                                         "host/pseudoprem-iis.loluvw.xyz"
                                                                     ],
                                                            "name":  "basicAspDemo",
-                                                           "identityType":  "ApplicationPoolIdentity",
-                                                           "identityObjectClass":  "computer"
+                                                           "identityType":  "ApplicationPoolIdentity"
                                                        },
                                            "appName":  "sillyApp",
                                            "authentication":  {
@@ -208,10 +204,28 @@ var configDiscoveryData = {
                                                                       }
                                                                   ]
                                        },
+                      "appPool":  {
+                                      "username":  "PSEUDOPREM-IIS",
+                                      "spns":  [
+                                                   "host/pseudoprem-iis",
+                                                   "host/pseudoprem-iis.loluvw.xyz"
+                                               ],
+                                      "name":  "formsExample",
+                                      "identityType":  "ApplicationPoolIdentity"
+                                  },
+                      "siteName":  "FaceBook 2.0",
                       "authentication":  {
                                              "anonymousAuthentication":  {
 
-                                                                         }
+                                                                         },
+                                             "windowsAuthentication":  {
+                                                                           "useAppPoolCredentials":  false,
+                                                                           "providers":  {
+                                                                                             "second":  "NTLM",
+                                                                                             "first":  "Negotiate"
+                                                                                         },
+                                                                           "useKernelMode":  true
+                                                                       }
                                          }
                   },
                   {
@@ -227,8 +241,7 @@ var configDiscoveryData = {
                                       "username":  "LOLUVW\\bad-service",
                                       "spns":  null,
                                       "name":  "misconfiguredSite",
-                                      "identityType":  "SpecificUser",
-                                      "identityObjectClass":  null
+                                      "identityType":  "SpecificUser"
                                   },
                       "siteName":  "Save Whales",
                       "authentication":  {
@@ -270,8 +283,7 @@ var configDiscoveryData = {
                                                                             "host/pseudoprem-iis.loluvw.xyz"
                                                                         ],
                                                                "name":  "badlyMisconfiguredSite",
-                                                               "identityType":  "LocalService",
-                                                               "identityObjectClass":  "computer"
+                                                               "identityType":  "LocalService"
                                                            },
                                                "appName":  "badApp",
                                                "authentication":  {
@@ -308,8 +320,7 @@ var configDiscoveryData = {
                                                                             "host/pseudoprem-iis.loluvw.xyz"
                                                                         ],
                                                                "name":  ".NET v2.0",
-                                                               "identityType":  "ApplicationPoolIdentity",
-                                                               "identityObjectClass":  "computer"
+                                                               "identityType":  "ApplicationPoolIdentity"
                                                            },
                                                "appName":  "terribleApp",
                                                "authentication":  {
@@ -346,8 +357,7 @@ var configDiscoveryData = {
                                                    "host/pseudoprem-iis.loluvw.xyz"
                                                ],
                                       "name":  "badlyMisconfiguredSite",
-                                      "identityType":  "LocalService",
-                                      "identityObjectClass":  "computer"
+                                      "identityType":  "LocalService"
                                   },
                       "siteName":  "Conspiracy Central",
                       "authentication":  {
@@ -362,6 +372,54 @@ var configDiscoveryData = {
                                                                                          },
                                                                            "useKernelMode":  true
                                                                        }
+                                         }
+                  },
+                  {
+                      "siteName":  "FormsSample",
+                      "bindings":  {
+                                       "port":  "80",
+                                       "protocol":  "http",
+                                       "hostName":  "formsSample",
+                                       "address":  "*"
+                                   },
+                      "appPool":  {
+                                      "username":  "PSEUDOPREM-IIS",
+                                      "spns":  [
+                                                   "host/pseudoprem-iis",
+                                                   "host/pseudoprem-iis.loluvw.xyz"
+                                               ],
+                                      "name":  "FormsSample",
+                                      "identityType":  "ApplicationPoolIdentity"
+                                  },
+                      "applications":  null,
+                      "authentication":  {
+                                             "anonymousAuthentication":  {
+
+                                                                         }
+                                         }
+                  },
+                  {
+                      "siteName":  "FormsSample2",
+                      "bindings":  {
+                                       "port":  "80",
+                                       "protocol":  "http",
+                                       "hostName":  "formsExample",
+                                       "address":  "*"
+                                   },
+                      "appPool":  {
+                                      "username":  "PSEUDOPREM-IIS",
+                                      "spns":  [
+                                                   "host/pseudoprem-iis",
+                                                   "host/pseudoprem-iis.loluvw.xyz"
+                                               ],
+                                      "name":  "FormsSample2",
+                                      "identityType":  "ApplicationPoolIdentity"
+                                  },
+                      "applications":  null,
+                      "authentication":  {
+                                             "anonymousAuthentication":  {
+
+                                                                         }
                                          }
                   }
               ],

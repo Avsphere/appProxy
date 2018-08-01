@@ -10,6 +10,9 @@ body {
 .amber {
   background-color: #ffc107!important;
 }
+.dull {
+  background-color: #d6d5d5!important;
+}
 .baseInfo {
   margin-left: 12%;
 }

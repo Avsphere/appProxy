@@ -7,15 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="shortcut icon" href="favicon.ico">
     <!-- Global CSS -->
     <link rel="stylesheet" href="./lib/css/fontMod.css">
     <link rel="stylesheet" href="./lib/fontawesome/css/all.css">
     <link rel="stylesheet" href="./lib/css/bootstrap.min.css">
     <link rel="stylesheet" href="./lib/css/prettyDocs.css">
     <link rel="stylesheet" href="./lib/css/style.css">
-
-
+    <link rel="shortcut icon" type="image/x-icon" href="./lib/favicon.ico"/>
 </head>
 
 <body class="body-blue">
@@ -38,7 +36,7 @@
             <div class="container">
                 <div id="doc-header" class="doc-header text-center">
                     <h1 class="doc-title"><i class="icon fa fa-paper-plane"></i> Documentation</h1>
-                    <div class="meta"><i class="fa fa-clock-o"></i> Last updated: July 11, 2018</div>
+                    <div class="meta"><i class="fa fa-clock-o"></i> Last updated: July 30, 2018</div>
                 </div><!--//doc-header-->
                 <div class="doc-body">
                     <div class="doc-content">
@@ -103,12 +101,10 @@
                                 <h2 class="section-title">How it Works</h2>
                                 <div class="section-block">
                                     <p>
-                                      When the powershell script is first executed it will search through the servers IIS configuration that is relevant to App Proxy publications, building a configuration object along the way.
+                                      When the PowerShell script is first executed it will query the relevant configuration data, parsing and building a configuration object along the way.
                                     </p>
                                     <p>
-                                      It will then convert this object to JSON and inject this json into a js file. Unless the onlyJson parameter is used the script will then attempt to open the index.html in a browser (this does not require internet).
-
-                                      Behind the scenes another js file will parse the json, perform an analysis, then render the view.
+                                      It will then convert this to JSON and inject this json into a js file that will be located in the data directory. When the index.html is opened another js file will parse the json, perform an analysis, then dynamically render the view.
                                     </p>
                                     <p>
                                       From here the generated GUI can be used to find misconfigured settings, then offer assistance on how these settings can be modified such that the application can be published.
@@ -126,6 +122,68 @@
                                 <div id="step1"  class="section-block">
 
                                     <p>Download the tool or clone the <a href="https://github.com/Avsphere/appProxyAutoPub" target="_blank"> repository</a>
+                                    </p>
+
+                                    <a href="https://github.com/Avsphere/appProxy/archive/master.zip" class="btn btn-green" target="_blank"><i class="fa fa-download"></i> Download Tool</a>
+                                    <br/>
+                                    <br/>
+                                    <p>
+                                      Move the tool to your IIS server, open up powershell with admin permissions. Navigate to the tool root directory where the .ps1 lives and execute one of the following:
+                                    </p>
+                                    <div class="code-block">
+                                        <h6>If you have already setup your connector:</h6>
+                                        <p><code>configurationDiscovery -connectorName "[connector server name here]"</code></p>
+                                        <h6>If you have NOT setup your connector:</h6>
+                                        <p><code>configurationDiscovery</code></p>
+                                        <h6>If you would just like the JSON output:</h6>
+                                        <p><code>configurationDiscovery -onlyJson "true"</code></p>
+                                        <h6>If you would just like to point to the root directory</h6>
+                                        <p><code>configurationDiscovery -dirPath "[path to source]"</code></p>
+                                    </div><!--//code-block-->
+                                    <p>
+                                      Now open the index.html file in edge or chrome to interact with the analysis GUI. The parsed configuration data is stored in the data/ directory.
+                                    </p>
+                                </div><!--//section-block-->
+                                <div id="step3"  class="section-block">
+                                    <h3 class="block-title">Interacting with the GUI</h3>
+                                    <p>
+                                      There are really only 3 main activites you can preform when interacting with the index.html GUI:
+                                    </p>
+                                    <ul class="list">
+                                      <li>Clicking a site to view a list summary of the checked configuration</li>
+                                      <li>Clicking a list item in the summary group to view detailed information and tips on how to remediate</li>
+                                      <li>Clicking the "Generate Publication Scripts" button to head over to the bulk automated publication feature of this tool</li>
+                                    </ul>
+                                    <div class="section-block">
+                                      <h6>#index.html - Summary View</h6>
+                                        <img class="img-fluid" src="lib/images/summaryView.png" alt="elegant icons">
+                                  </div>
+                                  <p>
+                                    The purpose of this is to show a quick summary of the analysis. Each list item details a specific check performed by the analysis. Clicking one of these items opens up a modal with detailed information.
+                                  </p>
+                                  <div class="section-block">
+                                    <h6>#index.html - Detailed View</h6>
+                                      <img class="img-fluid" src="lib/images/siteOrAppDetails.png" alt="elegant icons">
+                                </div>
+                                <p>
+                                  The purpose of this is to show more details about the clicked site or app but also possible solutions to help fix failed tips.
+                                </p>
+                                </div><!--//section-block-->
+                                <div id="step2"  class="section-block">
+                                    <h3 class="block-title">In Development</h3>
+                                    <p>
+                                      The auto generation feature has just been added, though it should theoretically be able to validate the input by querying Azure AD after authentication.
+                                    </p>
+                                    <p>
+                                      The configuration checks are nearing their MVP final update. The "possible solutions" should soon supply links to the actual documentation
+                                    </p>
+                                </div>
+                            </section><!--//doc-section-->
+                            <section id="installation-section" class="doc-section">
+                                <h2 class="section-title">Technical Details</h2>
+                                <div id="step1"  class="section-block">
+
+                                    <p>How are the d
                                     </p>
 
                                     <a href="https://github.com/Avsphere/appProxy/archive/master.zip" class="btn btn-green" target="_blank"><i class="fa fa-download"></i> Download Tool</a>
@@ -148,6 +206,13 @@
                                       Now open the index.html file in edge or chrome to interact with the analysis GUI. The parsed configuration data is stored in the data/ directory.
                                     </p>
                                 </div><!--//section-block-->
+
+                                <div id="step3"  class="section-block">
+                                    <h3 class="block-title">What's Next</h3>
+                                    <p>
+                                      Currently this tool has not been tested outside of lab environments, the idea is that after trial runs additional improvments should be made.
+                                    </p>
+                                </div><!--//section-block-->
                                 <div id="step2"  class="section-block">
                                     <h3 class="block-title">In Development</h3>
                                     <p>
@@ -156,14 +221,7 @@
                                     <p>
                                       The configuration checks are nearing their MVP final update. The "possible solutions" should soon supply links to the actual documentation
                                     </p>
-
-                                </div><!--//section-block-->
-                                <div id="step3"  class="section-block">
-                                    <h3 class="block-title">What's Next</h3>
-                                    <p>
-                                      Currently this tool has not been tested outside of lab environments, the idea is that after trial runs additional improvments should be made.
-                                    </p>
-                                </div><!--//section-block-->
+                                </div>
                             </section><!--//doc-section-->
                         </div><!--//content-inner-->
                     </div><!--//doc-content-->
