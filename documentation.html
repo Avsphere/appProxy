@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-    <title>App Proxy Configuartion Discovery Documentation</title>
+    <title>App Proxy Configuration Discovery Documentation</title>
     <!-- Meta -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -62,7 +62,7 @@
                                       This tool is intended to be used by those seeking to publish on-premise apps to Azure AD via App Proxy. There is a strong focus on aiding those with Windows Integrated Authentication apps who seek to enable SSO via Kerberos Constrained Delegation (KCD).
                                     </p>
                                     <p>
-                                      This tool will be less useful for those seeking to publish claims based / anonymous authentication apps due to the configuration possibilites.
+                                      This tool will be less useful for those seeking to publish claims based / anonymous authentication apps due to the configuration possibilities.
                                     </p>
                                     <p>
                                       The best way to conceptualize this tool is to think of it as a sanity check, helping to find the most common configuration errors. By no means is this tool a one stop fix all.
@@ -87,13 +87,13 @@
                                           <ul class="list">
                                             <li>Admin permissions</li>
                                             <li>IIS server 2008+</li>
-                                            <li>Powershell v4</li>
-                                            <li>Edge / Chrome (reccomended)</li>
+                                            <li>PowerShell v4</li>
+                                            <li>Edge / Chrome (recommended)</li>
                                           </ul>
                                     </div>
                                   </div>
                                 </div>
-                                <a href="#"> <h3 class="block-title">View the Demo here!</h3></a>
+                                <a href="https://youtu.be/xAMEaitzhpU"> <h3 class="block-title">View the Demo here!</h3></a>
 
 
                             </section><!--//doc-section-->
@@ -128,10 +128,10 @@
                                     <br/>
                                     <br/>
                                     <p>
-                                      Move the tool to your IIS server, open up powershell with admin permissions. Navigate to the tool root directory where the .ps1 lives and execute one of the following:
+                                      Move the tool to your IIS server, open up PowerShell with admin permissions. Navigate to the tool root directory where the .ps1 lives and execute one of the following:
                                     </p>
                                     <div class="code-block">
-                                        <h6>If you have already setup your connector:</h6>
+                                        <h6>If you have already setup your connector, you can pass the servers name:</h6>
                                         <p><code>configurationDiscovery -connectorName "[connector server name here]"</code></p>
                                         <h6>If you have NOT setup your connector:</h6>
                                         <p><code>configurationDiscovery</code></p>
@@ -141,13 +141,16 @@
                                         <p><code>configurationDiscovery -dirPath "[path to source]"</code></p>
                                     </div><!--//code-block-->
                                     <p>
+                                      **Note that currently you can only pass a single connector name. This will attempt to install the Windows feature "RSAT-AD-PowerShell" if it is not installed already. It must do this so that it can query the connectors delegation configuration.
+                                    </p>
+                                    <p>
                                       Now open the index.html file in edge or chrome to interact with the analysis GUI. The parsed configuration data is stored in the data/ directory.
                                     </p>
                                 </div><!--//section-block-->
                                 <div id="step3"  class="section-block">
                                     <h3 class="block-title">Interacting with the GUI</h3>
                                     <p>
-                                      There are really only 3 main activites you can preform when interacting with the index.html GUI:
+                                      There are really only 3 main activities you can preform when interacting with the index.html GUI:
                                     </p>
                                     <ul class="list">
                                       <li>Clicking a site to view a list summary of the checked configuration</li>
@@ -169,59 +172,29 @@
                                   The purpose of this is to show more details about the clicked site or app but also possible solutions to help fix failed tips.
                                 </p>
                                 </div><!--//section-block-->
+
+                            </section><!--//doc-section-->
+                            <section id="installation-section" class="doc-section">
+                                <h2 class="section-title">Technical Details</h2>
+                                <div id="step31"  class="section-block">
+                                    <h3 class="block-title">Decision Tree</h3>
+                                    <p>
+                                      Once the checks have been finalized this will contain a visualization of how the analysis is performed
+                                    </p>
+                                </div><!--//section-block-->
                                 <div id="step2"  class="section-block">
                                     <h3 class="block-title">In Development</h3>
                                     <p>
                                       The auto generation feature has just been added, though it should theoretically be able to validate the input by querying Azure AD after authentication.
                                     </p>
-                                    <p>
-                                      The configuration checks are nearing their MVP final update. The "possible solutions" should soon supply links to the actual documentation
-                                    </p>
                                 </div>
-                            </section><!--//doc-section-->
-                            <section id="installation-section" class="doc-section">
-                                <h2 class="section-title">Technical Details</h2>
-                                <div id="step1"  class="section-block">
-
-                                    <p>How are the d
-                                    </p>
-
-                                    <a href="https://github.com/Avsphere/appProxy/archive/master.zip" class="btn btn-green" target="_blank"><i class="fa fa-download"></i> Download Tool</a>
-                                    <br />
-                                    <br />
-                                    <p>
-                                      Move the tool to your IIS server, open up powershell with admin permissions. Navigate to the tool root directory where the .ps1 lives and execute one of the following:
-                                    </p>
-                                    <div class="code-block">
-                                        <h6>If you have already setup your connector:</h6>
-                                        <p><code>configurationDiscovery -connectorName "[connector server name here]"</code></p>
-                                        <h6>If you have NOT setup your connector:</h6>
-                                        <p><code>configurationDiscovery</code></p>
-                                        <h6>If you would just like the JSON output:</h6>
-                                        <p><code>configurationDiscovery -onlyJson "true"</code></p>
-                                        <h6>If you would just like to point to the root directory</h6>
-                                        <p><code>configurationDiscovery -dirPath "[path to source]"</code></p>
-                                    </div><!--//code-block-->
-                                    <p>
-                                      Now open the index.html file in edge or chrome to interact with the analysis GUI. The parsed configuration data is stored in the data/ directory.
-                                    </p>
-                                </div><!--//section-block-->
 
                                 <div id="step3"  class="section-block">
                                     <h3 class="block-title">What's Next</h3>
                                     <p>
-                                      Currently this tool has not been tested outside of lab environments, the idea is that after trial runs additional improvments should be made.
+                                      Currently this tool has not been tested outside of lab environments, the idea is that after trial runs additional improvements should be made.
                                     </p>
                                 </div><!--//section-block-->
-                                <div id="step2"  class="section-block">
-                                    <h3 class="block-title">In Development</h3>
-                                    <p>
-                                      The auto generation feature has just been added, though it should theoretically be able to validate the input by querying Azure AD after authentication.
-                                    </p>
-                                    <p>
-                                      The configuration checks are nearing their MVP final update. The "possible solutions" should soon supply links to the actual documentation
-                                    </p>
-                                </div>
                             </section><!--//doc-section-->
                         </div><!--//content-inner-->
                     </div><!--//doc-content-->

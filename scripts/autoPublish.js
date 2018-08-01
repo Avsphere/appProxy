@@ -18,7 +18,6 @@ class AutoPublish {
     this.analysis = analysisResults;
     console.log(this.analysis);
     this.initView();
-    this.safeUrlGen  = new UrlSafeString();
 
   }
 
@@ -59,7 +58,7 @@ class AutoPublish {
           bindings = analyzedSite.site.bindings;
       if ( bindings.hostName.length === 0 ) { bindings.hostName = 'localhost' }
       if ( Object.keys(analyzedSite.site.authentication).includes('windowsAuthentication') ) { siteType = 'wia'; }
-      let internalUrl = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port;
+      let internalUrl = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port + '/';
       let progressColor = determineProgressColor( readinessScore );
       if ( !analyzedSite.site.authentication.hasOwnProperty('windowsAuthentication') ) {
         progressColor = 'dull bg-success';
@@ -136,7 +135,7 @@ class AutoPublish {
       if ( bindings.hostName.length === 0 ) { bindings.hostName = 'localhost' }
       site.analyzedApps.forEach( (app, j) => {
         let childId = 'app-' + i.toString() + '-' + j.toString(),
-            appUrl = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port + '/' + app.app.appName,
+            appUrl = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port + '/' + app.app.appName + '/',
             appRow = createAppRow( app, site.siteName, appUrl, childId, parentId, bindings );
         children.push( $(appRow) );
       })

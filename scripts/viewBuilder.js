@@ -162,8 +162,7 @@ class ViewBuilder {
                   <p>For more detailed documentation click the link above or the documentation link </p>
                   <p> Click a site in the table to the left to reveal its configuration settings in the context of Application Proxy</p>
                   <p> Once a site has been clicked you can select one of the list items for a more detailed view / publication script </p>
-                  <p>Use the readiness score to quickly gauge what sites or apps likely need the most work.</p>
-                  <p>**Note that the readiness score is a heuristic</p>
+                  <p>Use the readiness heuristic score to quickly gauge what sites or apps likely need the most work.</p>
                 </div>`
     return html;
   }
