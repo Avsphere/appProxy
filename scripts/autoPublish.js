@@ -1,10 +1,9 @@
 $(function() {
   const configData = configDiscoveryData;
-
   function init() {
     let configApi = new ConfigApi(configData);
     let analyzer = new WindowsAnalysis( configApi );
-    let autoPublish = new AutoPublish( analyzer.results )
+    let autoPublish = new AutoPublish( analyzer.results );
   }
 
   init();
@@ -19,6 +18,8 @@ class AutoPublish {
     this.analysis = analysisResults;
     console.log(this.analysis);
     this.initView();
+    this.safeUrlGen  = new UrlSafeString();
+
   }
 
 
@@ -52,6 +53,7 @@ class AutoPublish {
     }
     function createSiteRow( analyzedSite,  parentId) {
       let readinessScore = analyzedSite.readinessScore.toPrecision(3),
+          readinessText = readinessScore,
           appCount = analyzedSite.analyzedApps.length,
           siteType = 'forms',
           bindings = analyzedSite.site.bindings;
@@ -59,13 +61,18 @@ class AutoPublish {
       if ( Object.keys(analyzedSite.site.authentication).includes('windowsAuthentication') ) { siteType = 'wia'; }
       let internalUrl = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port;
       let progressColor = determineProgressColor( readinessScore );
+      if ( !analyzedSite.site.authentication.hasOwnProperty('windowsAuthentication') ) {
+        progressColor = 'dull bg-success';
+        readinessScore = 100;
+        readinessText = 'Non WIA'
+      }
       let progressHtml = `
       <div class="progress">
         <div class="progress-bar ${progressColor} progress-bar-striped" role="progressbar" aria-valuenow="${readinessScore}%" aria-valuemin="0" aria-valuemax="100" style="width:${readinessScore}%">
-          ${readinessScore}
+          ${readinessText}
         </div>
       </div>`
-      let html = `<tr class='clickable-row siteRow' id=${parentId} data-type=${siteType} data-internalUrl="${internalUrl}">
+      let html = `<tr class='clickable-row siteRow' id=${parentId} data-type=${siteType} data-hostName="${bindings.hostName}" data-internalUrl="${internalUrl}">
                     <td class="siteName">${analyzedSite.siteName}</td>
                     <td>${progressHtml}</td>
                     <td class="chosenSpn">${buildSpnDropdown(analyzedSite.site.appPool.spns)}</td>
@@ -74,19 +81,25 @@ class AutoPublish {
                   </tr>`
       return html;
     }
-    function createAppRow( app, siteName, internalUrl, childId, parentId ) {
+    function createAppRow( app, siteName, internalUrl, childId, parentId, bindings ) {
       let readinessScore = app.readinessScore.toPrecision(3),
+          readinessText = readinessScore,
           progressColor = determineProgressColor( readinessScore ),
-          appType = 'forms',
-          progressHtml = `
+          appType = 'forms';
+          if ( !app.app.authentication.hasOwnProperty('windowsAuthentication') ) {
+            progressColor = 'dull bg-success';
+            readinessScore = 100;
+            readinessText = 'Non WIA'
+          }
+      let progressHtml = `
         <div class="progress">
           <div class="progress-bar ${progressColor} progress-bar-striped" role="progressbar" aria-valuenow="${readinessScore}%" aria-valuemin="0" aria-valuemax="100" style="width:${readinessScore}%">
-            ${readinessScore}
+            ${readinessText}
           </div>
         </div>`
 
       if ( Object.keys(app.app.authentication).includes('windowsAuthentication') ) { appType = 'wia'; }
-      let html = `<tr class='clickable-row' id="${childId}" data-type=${appType} data-parentId=${parentId} data-internalUrl=${internalUrl}>
+      let html = `<tr class='clickable-row' id="${childId}" data-type=${appType} data-parentId=${parentId} data-internalUrl=${internalUrl} data-hostName="${bindings.hostName}">
                     <td class="siteName">${siteName}/${app.app.appName}</td>
                     <td>${progressHtml}</td>
                     <td class="chosenSpn">${buildSpnDropdown(app.app.appPool.spns)}</td>
@@ -124,7 +137,7 @@ class AutoPublish {
       site.analyzedApps.forEach( (app, j) => {
         let childId = 'app-' + i.toString() + '-' + j.toString(),
             appUrl = bindings.protocol + '://' + bindings.hostName + ':' + bindings.port + '/' + app.app.appName,
-            appRow = createAppRow( app, site.siteName, appUrl, childId, parentId );
+            appRow = createAppRow( app, site.siteName, appUrl, childId, parentId, bindings );
         children.push( $(appRow) );
       })
 
@@ -140,6 +153,7 @@ class AutoPublish {
   }
 
   generatePublishScript() {
+    let that = this;
     function pullDataFromRow(row) {
       let dataBlob = {
         siteName : $(row).find('td.siteName').text(),
@@ -147,6 +161,7 @@ class AutoPublish {
         connectorGroup : $(row).find('td.connectorCol input').val(),
         tenantName : $(row).find('td.tenantName input').val(),
         internalUrl : $(row).attr('data-internalUrl'),
+        hostName : $(row).attr('data-hostName'),
         itemType : $(row).attr('data-type')
       }
       if ( $(row).hasClass('siteRow') ) {
@@ -157,22 +172,26 @@ class AutoPublish {
     function buildPsScript( dataBlobs ) {
       let psScript = `Connect-AzureAd`;
       dataBlobs.forEach( (blob) => {
-        let externalUrl = `https://${blob.siteName}-${blob.tenantName}.msappproxy.net/`
+        let externalUrl = `https://${blob.hostName}-${blob.tenantName}.msappproxy.net/`
         if ( blob.type === 'app' ) {
           let pathDirs = blob.siteName.split('/');
           pathDirs.splice(0,1);
           externalUrl += pathDirs.join('/') + '/'
         }
 
-        let externalAuthType = blob.itemType === 'forms' ? 'Passthru' : 'AadPreAuthentication';
-
-        let scriptBlock = `
-        $connectorGroup = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "${blob.connectorGroup}"}
-        New-AzureADApplicationProxyApplication -DisplayName "${blob.siteName}" -InternalUrl "${blob.internalUrl}" -ConnectorGroupId $connectorGroup.id -ExternalUrl "${externalUrl}" -ExternalAuthenticationType ${externalAuthType}
-        $AppProxyApp1=Get-AzureADApplication  | where-object {$_.Displayname -eq "${blob.siteName}"}
-        Set-AzureADApplicationProxyApplicationSingleSignOn -ObjectId $AppProxyApp1.Objectid -SingleSignOnMode OnPremisesKerberos -KerberosInternalApplicationServicePrincipalName ${blob.chosenSpn} -KerberosDelegatedLoginIdentity OnPremisesUserPrincipalName
-        `;
-        psScript += '\n' + scriptBlock;
+        if ( blob.itemType === 'forms' ) {
+          psScript += `
+          $connectorGroup = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "${blob.connectorGroup}"}
+          New-AzureADApplicationProxyApplication -DisplayName "${blob.siteName}" -InternalUrl "${blob.internalUrl}" -ConnectorGroupId $connectorGroup.id -ExternalUrl "${externalUrl}" -ExternalAuthenticationType Passthru`;
+        } else {
+          psScript += `
+          $connectorGroup = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "${blob.connectorGroup}"}
+          New-AzureADApplicationProxyApplication -DisplayName "${blob.siteName}" -InternalUrl "${blob.internalUrl}" -ConnectorGroupId $connectorGroup.id -ExternalUrl "${externalUrl}" -ExternalAuthenticationType AadPreAuthentication
+          $AppProxyApp1=Get-AzureADApplication  | where-object {$_.Displayname -eq "${blob.siteName}"}
+          Set-AzureADApplicationProxyApplicationSingleSignOn -ObjectId $AppProxyApp1.Objectid -SingleSignOnMode OnPremisesKerberos -KerberosInternalApplicationServicePrincipalName ${blob.chosenSpn} -KerberosDelegatedLoginIdentity OnPremisesUserPrincipalName
+          `;
+        }
+        psScript += '\n';
       })
       return psScript;
     }

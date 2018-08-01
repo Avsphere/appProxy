@@ -19,7 +19,40 @@ var configDiscoveryData = {
                                                      "targetSpnInConnector":  true
                                                  }
                                              ],
-                      "applications":  null,
+                      "applications":  {
+                                           "appPool":  {
+                                                           "username":  "loluvw.xyz\\avsp-service",
+                                                           "spns":  [
+                                                                        "http/pseudoprem-iis.loluvw.xyz",
+                                                                        "http/pseudoprem-iis"
+                                                                    ],
+                                                           "name":  "aspMaster",
+                                                           "identityType":  "SpecificUser"
+                                                       },
+                                           "appName":  "awesomeApp",
+                                           "authentication":  {
+                                                                  "windowsAuthentication":  {
+                                                                                                "useAppPoolCredentials":  true,
+                                                                                                "providers":  {
+                                                                                                                  "second":  "NTLM",
+                                                                                                                  "first":  "Negotiate"
+                                                                                                              },
+                                                                                                "useKernelMode":  true
+                                                                                            }
+                                                              },
+                                           "delegationSettings":  [
+                                                                      {
+                                                                          "spn":  "http/pseudoprem-iis.loluvw.xyz",
+                                                                          "trustedToAuthForDelegation":  true,
+                                                                          "targetSpnInConnector":  true
+                                                                      },
+                                                                      {
+                                                                          "spn":  "http/pseudoprem-iis",
+                                                                          "trustedToAuthForDelegation":  true,
+                                                                          "targetSpnInConnector":  true
+                                                                      }
+                                                                  ]
+                                       },
                       "appPool":  {
                                       "username":  "loluvw.xyz\\avsp-service",
                                       "spns":  [
@@ -155,7 +188,7 @@ var configDiscoveryData = {
                       "bindings":  {
                                        "port":  "80",
                                        "protocol":  "http",
-                                       "hostName":  "facebookv2",
+                                       "hostName":  "thebooksitev2",
                                        "address":  "*"
                                    },
                       "delegationSettings":  [
@@ -213,7 +246,7 @@ var configDiscoveryData = {
                                       "name":  "formsExample",
                                       "identityType":  "ApplicationPoolIdentity"
                                   },
-                      "siteName":  "FaceBook 2.0",
+                      "siteName":  "TheBook Site 2.0",
                       "authentication":  {
                                              "anonymousAuthentication":  {
 
