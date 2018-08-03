@@ -170,7 +170,7 @@ class AutoPublish {
     }
     function buildPsScript( dataBlobs ) {
       let psScript = `Connect-AzureAd`;
-      dataBlobs.forEach( (blob) => {
+      dataBlobs.forEach( (blob, blobIndex) => {
         let externalUrl = `https://${blob.hostName}-${blob.tenantName}.msappproxy.net/`
         if ( blob.type === 'app' ) {
           let pathDirs = blob.siteName.split('/');
@@ -180,14 +180,16 @@ class AutoPublish {
 
         if ( blob.itemType === 'forms' ) {
           psScript += `
-          $connectorGroup = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "${blob.connectorGroup}"}
-          New-AzureADApplicationProxyApplication -DisplayName "${blob.siteName}" -InternalUrl "${blob.internalUrl}" -ConnectorGroupId $connectorGroup.id -ExternalUrl "${externalUrl}" -ExternalAuthenticationType Passthru`;
+          Write-Host "Publishing ${blob.siteName}" -ForegroundColor Green
+          $connectorGroup_${blobIndex} = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "${blob.connectorGroup}"}
+          New-AzureADApplicationProxyApplication -DisplayName "${blob.siteName}" -InternalUrl "${blob.internalUrl}" -ConnectorGroupId $connectorGroup_${blobIndex}.id -ExternalUrl "${externalUrl}" -ExternalAuthenticationType Passthru`;
         } else {
           psScript += `
-          $connectorGroup = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "${blob.connectorGroup}"}
-          New-AzureADApplicationProxyApplication -DisplayName "${blob.siteName}" -InternalUrl "${blob.internalUrl}" -ConnectorGroupId $connectorGroup.id -ExternalUrl "${externalUrl}" -ExternalAuthenticationType AadPreAuthentication
-          $AppProxyApp1=Get-AzureADApplication  | where-object {$_.Displayname -eq "${blob.siteName}"}
-          Set-AzureADApplicationProxyApplicationSingleSignOn -ObjectId $AppProxyApp1.Objectid -SingleSignOnMode OnPremisesKerberos -KerberosInternalApplicationServicePrincipalName ${blob.chosenSpn} -KerberosDelegatedLoginIdentity OnPremisesUserPrincipalName
+          Write-Host "Publishing ${blob.siteName}" -ForegroundColor Green
+          $connectorGroup_${blobIndex} = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "${blob.connectorGroup}"}
+          New-AzureADApplicationProxyApplication -DisplayName "${blob.siteName}" -InternalUrl "${blob.internalUrl}" -ConnectorGroupId $connectorGroup_${blobIndex}.id -ExternalUrl "${externalUrl}" -ExternalAuthenticationType AadPreAuthentication
+          $AppProxyApp_${blobIndex}=Get-AzureADApplication  | where-object {$_.Displayname -eq "${blob.siteName}"}
+          Set-AzureADApplicationProxyApplicationSingleSignOn -ObjectId $AppProxyApp_${blobIndex}.Objectid -SingleSignOnMode OnPremisesKerberos -KerberosInternalApplicationServicePrincipalName ${blob.chosenSpn} -KerberosDelegatedLoginIdentity OnPremisesUserPrincipalName
           `;
         }
         psScript += '\n';

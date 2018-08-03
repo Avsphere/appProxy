@@ -72,6 +72,7 @@ canvas {
   top: 20%;
 }
 
+
 tr.clickable-row {
   cursor: pointer;
 }
@@ -97,6 +98,16 @@ tr.clickable-row {
 .documentationLink a {
   color:white;
   font-size: 1.25rem;
+  font-weight: 400;
+
+}
+.feedbackLink {
+  margin-left: 30%;
+  margin-top: .75rem;
+}
+.feedbackLink a {
+  color:white;
+  font-size: 1.15rem;
   font-weight: 400;
 
 }

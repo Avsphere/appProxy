@@ -30,13 +30,16 @@
         <h5 class="documentationLink">
           <a href="./documentation.html">Documentation</a>
         </h5>
+        <h5 class="feedbackLink">
+          <a href="https://www.surveymonkey.com/r/YJTNNLB" target="_blank">Leave feedback!</a>
+        </h5>
 
       </header>
         <div class="doc-wrapper">
             <div class="container">
                 <div id="doc-header" class="doc-header text-center">
                     <h1 class="doc-title"><i class="icon fa fa-paper-plane"></i> Documentation</h1>
-                    <div class="meta"><i class="fa fa-clock-o"></i> Last updated: July 30, 2018</div>
+                    <div class="meta"><i class="fa fa-clock-o"></i> Last updated: August 3, 2018</div>
                 </div><!--//doc-header-->
                 <div class="doc-body">
                     <div class="doc-content">
@@ -88,7 +91,7 @@
                                             <li>Admin permissions</li>
                                             <li>IIS server 2008+</li>
                                             <li>PowerShell v4</li>
-                                            <li>Edge / Chrome (recommended)</li>
+                                            <li>Edge / Chrome (IE support coming soon)</li>
                                           </ul>
                                     </div>
                                   </div>
@@ -121,7 +124,7 @@
                                 <h2 class="section-title">How to Use</h2>
                                 <div id="step1"  class="section-block">
 
-                                    <p>Download the tool or clone the <a href="https://github.com/Avsphere/appProxyAutoPub" target="_blank"> repository</a>
+                                    <p>Download the tool or clone the <a href="https://github.com/Avsphere/appProxy" target="_blank"> repository</a>
                                     </p>
 
                                     <a href="https://github.com/Avsphere/appProxy/archive/master.zip" class="btn btn-green" target="_blank"><i class="fa fa-download"></i> Download Tool</a>
@@ -140,6 +143,10 @@
                                         <h6>If you would just like to point to the root directory</h6>
                                         <p><code>configurationDiscovery -dirPath "[path to source]"</code></p>
                                     </div><!--//code-block-->
+                                    <div class="code-block">
+                                      <h6>If you see an error regarding execution policy you may need to run:</h6>
+                                      <code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code>
+                                    </div>
                                     <p>
                                       **Note that currently you can only pass a single connector name. This will attempt to install the Windows feature "RSAT-AD-PowerShell" if it is not installed already. It must do this so that it can query the connectors delegation configuration.
                                     </p>
