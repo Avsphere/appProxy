@@ -2,7 +2,7 @@
 
 This is a tool to help with the app proxy publication process. It is intended to be used proactively to discover configuration settings in the context of app proxy. 
 
-Check out the documentation [Documentation]( https://avsphere.github.io/appProxy/documentation.html) to learn more!
+Check out the [documentation]( https://avsphere.github.io/appProxy/documentation.html) to learn more!
 
 ## Current State
 
