@@ -14,12 +14,18 @@ function camelToTitleCase( stringValue ){
 class WindowsAnalysis {
   constructor( api ) {
     this.api = api;
-    this.results = {
-      serverName : this.api.getServerName(),
-      os : this.api.getOs(),
-      serverVersion : this.api.rawData.iisVersion || "Unknown IIS Version",
-      analyzedSites : this.runChecks()
-    };
+    //if the serverName is not there then the data has not been populated. In which case I will display the tutorial
+    if ( this.api.rawData.serverName ) {
+      this.results = {
+        serverName : this.api.getServerName(),
+        os : this.api.getOs(),
+        serverVersion : this.api.rawData.iisVersion || "Unknown IIS Version",
+        analyzedSites : this.runChecks()
+      };
+    } else {
+      $('#siteTable').html('<a href="./documentation.html"><h2> Hmmm it appears there is no data to show, head over to the documentation to learn how to capture your data </h2> </a>')
+    }
+
 
 
   }
@@ -34,8 +40,6 @@ class WindowsAnalysis {
     })
     return (correctCount / totalChecks)*100;
   }
-
-
   checkAuth( authData, identityType ) {
     let checks = [],
         authTypes = Object.keys(authData),
@@ -189,7 +193,6 @@ class WindowsAnalysis {
 
     return checks;
   }
-
   checkSpns( appPool ) {
     let checks = [],
         spns = appPool.spns,
@@ -222,9 +225,6 @@ class WindowsAnalysis {
     }
     return checks;
   }
-
-
-
   checkDelegationSettings( siteOrApp ) {
     let containsWindowsAuth = Object.keys( siteOrApp.authentication ).includes('windowsAuthentication');
     if ( this.api.rawData.checkedConnector && containsWindowsAuth) {
@@ -280,7 +280,6 @@ class WindowsAnalysis {
     }
     else { return []; }
   }
-
   runChecks() {
     let that = this,
         sites = this.api.getSites(),

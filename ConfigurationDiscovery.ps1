@@ -3,6 +3,9 @@ param(
     [string]$connectorName,
     $onlyJson
 )
+
+Import-Module WebAdministration
+
 $Global:metaData = @{ checkConnector = $false; connectorName = ''}
 function Get-iisVersion {
     [CmdletBinding()]
@@ -105,6 +108,10 @@ function Get-AppPoolConfig {
         $poolConfig.Add( 'identityType' , $poolObj.processModel.identityType )
         $poolConfig.Add( 'username' , $username )
         $poolConfig.Add( 'spns', $validSpns)
+        if ( $Global:metaData.checkConnector -eq $true ) {
+            $identityObjectClass = Get-AccountType -name $username
+            $poolConfig.Add( 'identityObjectClass', $identityObjectClass )
+        }
 
     }
 
@@ -214,6 +221,26 @@ function CheckDelegationSettings {
 
     }
 
+
+}
+
+function Get-AccountType {
+    [CmdletBinding()]
+    param( [Parameter(Mandatory=$true)] [string]$name )
+
+    $user = Get-ADComputer -Filter { Name -eq $name }
+
+    if ( $user -eq $null ) {
+        $upnForm = $name.split('\')
+        $upnForm = $upnForm[1] + '@' + $upnForm[0]
+        $user = Get-ADUser -Filter { UserPrincipalName -eq $upnForm }
+    }
+
+    if ( $user -eq $null ) {
+        $user = Get-ADServiceAccount -Filter { Name -eq $name }
+    }
+
+    return $user.ObjectClass
 
 }
 
@@ -339,6 +366,7 @@ function Run-Main {
            }
         }
     }
+
     Process {
         $configData = Build-AppProxyConfiguration
         $configData.checkedConnector = $Global:metaData.checkConnector
@@ -350,7 +378,13 @@ function Run-Main {
             $fileContent = 'var configDiscoveryData = ' + $jsonData
             New-Item -Path ($dirPath + '\data\configDiscoveryData.js') -type file -Value $fileContent -Force
         }
+
     }
+
+    End {
+        return $jsonData;
+    }
+
 }
 
 $runCommand = "Run-Main"
@@ -362,7 +396,9 @@ if ( $PSBoundParameters.ContainsKey('connectorName') -eq $true ) {
     $runCommand += " -connectorName $connectorName";
 }
 if ( $PSBoundParameters.ContainsKey('onlyJson') -eq $true ) {
-    $runCommand += " -onlyJson $onlyJson";
+    $runCommand += " -onlyJson $true";
 }
 
  iex $runCommand
+
+ #start chrome .\index.html

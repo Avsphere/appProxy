@@ -159,7 +159,7 @@ class ViewBuilder {
   buildTutorial() {
     let html = `<div style="margin-left: 10%;">
                   <a href="./documentation.html" style="color:black;"> <h3> About This Tool</h3> </a>
-                  <p>For more detailed documentation click the link above or the documentation link </p>
+                  <p>If this is your first time using this tool it is highly recommended to thoroughly read the documentation</p>
                   <p> Click a site in the table to the left to reveal its configuration settings in the context of Application Proxy</p>
                   <p> Once a site has been clicked you can select one of the list items for a more detailed view / publication script </p>
                   <p>Use the readiness heuristic score to quickly gauge what sites or apps likely need the most work.</p>
@@ -377,9 +377,9 @@ class ViewBuilder {
               checkStatusHtml = `<span class="badge badge-danger badge-pill"><i class="fas fa-exclamation"></i></span>`;
             }
             html = `<tr class='clickable-row'>
-                          <td>${check.name}</td>
-                          <td>${checkStatusHtml}</td>
-                          <td>${check.details}</td>
+                      <td>${check.name}</td>
+                      <td>${checkStatusHtml}</td>
+                      <td>${check.detailsHtml}</td>
                         </tr>`
           }
           return html;
@@ -532,9 +532,7 @@ class ViewBuilder {
     $('#detailModal .modal-body').css('max-height', maxModalHeight + 'px')
   }
   buildView() {
-    console.log("Analysis", this.analysis)
     let htmlTable = this.buildTable( this.analysis.analyzedSites );
-
     $('#siteTable').append(htmlTable)
     this.setBaseServerInfo();
     $('#detailedView').html( this.buildTutorial() )
@@ -543,59 +541,57 @@ class ViewBuilder {
   }
   buildHeadlessView() {
     function rebuildBody() {
-      let baseHtml = `<!-- Begin page content -->
-        <main role="main" class="container">
-          <div class="modal" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:800px">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h1 class="modal-title">Modal title</h1>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-info">Generate publish script <i class="fas fa-cloud-upload-alt"></i></button>
-                  <button type="button" class="btn btn-primary">Download JSON <i class="fas fa-download"></i></button>
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <h1 class="mt-5" id="serverName">Title</h1>
-          <h5 id="iisVersion"> IIS : 3.4</h5>
-          <h5 id="osInfo"> OS : Windows Data server</h5>
-          <br>
-          <br>
-          <div class="container">
-            <div class="row">
-              <div class="col-sm">
-                <div id="siteTable">
-                  <h2>Site View</h2>
-                  <p>Click on an element for a closer look!</p>
-
-                </div>
-              </div>
-              <div class="col-sm">
-                <div style="margin-left:2%">
-                  <h2>Configuration Summary</h2>
-                  <p>Click an item for remediation assitance or if the app / site has a 100% readiness score, click for a publication script!</p>
-                  <div class="list-group" id="detailedView">
+      let baseHtml = `<main role="main" class="container-fluid">
+            <div class="modal" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document" style="max-width:800px">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title">Modal title</h1>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body" style="overflow-y:scroll;">
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="downloadJson">Download JSON <i class="fas fa-download"></i></button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-
-        </main>
-
-        <footer class="footer">
-          <div class="container">
-
-          </div>
-        </footer>`
+            <div class="baseInfo">
+              <h1 class="mt-5" id="serverName"></h1>
+              <h5 id="iisVersion"></h5>
+              <h5 id="osInfo"></h5>
+            </div>
+            <br>
+            <br>
+            <div class="container" style="max-width:1400px; margin-top:2%">
+              <div class="row">
+                <div class="col-sm">
+                  <div id="siteTable">
+                    <h2>Discovered Sites</h2>
+                  </div>
+                  <br/>
+                  <div>
+                    <h4>Ready to Automate Publication?</h4>
+                    <button type="button" class="btn btn-primary" id="autoPubBtn">Generate Publication Scripts <i class="fas fa-arrow-right"></i></button>
+                  </div>
+                </div>
+                <div class="col-sm" id="rightColumn">
+                  <div style="margin-left:2%">
+                    <div class="list-group" id="detailedView">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+          <footer class="footer">
+            <div class="container" style="height:200px">
+            </div>
+          </footer>`
 
         $('#headlessContainer').html( baseHtml )
     }
@@ -606,6 +602,5 @@ class ViewBuilder {
     $('#detailedView').html( this.buildTutorial() )
     this.setBaseServerInfo();
     this.handles();
-
   }
 }
