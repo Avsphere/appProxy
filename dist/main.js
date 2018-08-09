@@ -11,6 +11,7 @@ var AutoPublish = function () {
     this.analysis = analysisResults;
     console.log(this.analysis);
     this.initView();
+    this.customDomainChecked = false;
   }
 
   _createClass(AutoPublish, [{
@@ -61,9 +62,18 @@ var AutoPublish = function () {
           readinessText = 'Non WIA';
         }
         var progressHtml = '\n      <div class="progress">\n        <div class="progress-bar ' + progressColor + ' progress-bar-striped" role="progressbar" aria-valuenow="' + readinessScore + '%" aria-valuemin="0" aria-valuemax="100" style="width:' + readinessScore + '%">\n          ' + readinessText + '\n        </div>\n      </div>';
-        var html = '<tr class=\'clickable-row siteRow\' id=' + parentId + ' data-type=' + siteType + ' data-hostName="' + bindings.hostName + '" data-internalUrl="' + internalUrl + '">\n                    <td class="siteName">' + analyzedSite.siteName + '</td>\n                    <td>' + progressHtml + '</td>\n                    <td class="chosenSpn">' + buildSpnDropdown(analyzedSite.site.appPool.spns) + '</td>\n                    <td class="connectorCol"><input type="text" class="form-control connectorGroup" autocomplete="off" placeholder="Connector Group"></td>\n                    <td class="tenantName"><input type="text" class="form-control tenantGroup" autocomplete="off" placeholder="Tenant Name"></td>\n                  </tr>';
+        var html = '<tr class=\'clickable-row siteRow\' id=' + parentId + ' data-type=' + siteType + ' data-hostName="' + bindings.hostName + '" data-internalUrl="' + internalUrl + '">\n                    <td class="siteName">' + analyzedSite.siteName + '</td>\n                    <td>' + progressHtml + '</td>\n                    <td class="chosenSpn">' + buildSpnDropdown(analyzedSite.site.appPool.spns) + '</td>\n                    <td class="connectorCol"><input type="text" class="form-control connectorGroup" autocomplete="off" placeholder="Connector Group"></td>\n                    <td class="tenantName"><input type="text" class="form-control tenantGroup" autocomplete="off" placeholder="Tenant Name"></td>\n                    <td class="customDomain"><input type="text" class="form-control" autocomplete="off" placeholder="Custom Domain"></td>\n                  </tr>';
         return html;
       }
+      // function buildCheckBox() {
+      //   let html = `<div class="col">
+      //                 <div class="form-check" style="margin-top:5%">
+      //                   <input type="checkbox" class="form-check-input customDomain" >
+      //                   <label class="form-check-label" for="customDomain">Custom Domain</label>
+      //               </div>
+      //               </div>`;
+      //   return html;
+      // }
       function createAppRow(app, siteName, internalUrl, childId, parentId, bindings) {
         var readinessScore = app.readinessScore.toPrecision(3),
             readinessText = readinessScore,
@@ -79,11 +89,11 @@ var AutoPublish = function () {
         if (Object.keys(app.app.authentication).includes('windowsAuthentication')) {
           appType = 'wia';
         }
-        var html = '<tr class=\'clickable-row\' id="' + childId + '" data-type=' + appType + ' data-parentId=' + parentId + ' data-internalUrl=' + internalUrl + ' data-hostName="' + bindings.hostName + '">\n                    <td class="siteName">' + siteName + '/' + app.app.appName + '</td>\n                    <td>' + progressHtml + '</td>\n                    <td class="chosenSpn">' + buildSpnDropdown(app.app.appPool.spns) + '</td>\n                    <td class="connectorCol"><input type="text" class="form-control connectorGroup" autocomplete="off" placeholder="Connector Group"></td>\n                    <td class="tenantName"><input type="text" class="form-control tenantGroup" autocomplete="off" placeholder="Tenant Name"></td>\n                  </tr>';
+        var html = '<tr class=\'clickable-row\' id="' + childId + '" data-type=' + appType + ' data-parentId=' + parentId + ' data-internalUrl=' + internalUrl + ' data-hostName="' + bindings.hostName + '">\n                    <td class="siteName">' + siteName + '/' + app.app.appName + '</td>\n                    <td>' + progressHtml + '</td>\n                    <td class="chosenSpn">' + buildSpnDropdown(app.app.appPool.spns) + '</td>\n                    <td class="connectorCol"><input type="text" class="form-control connectorGroup" autocomplete="off" placeholder="Connector Group"></td>\n                    <td class="tenantName"><input type="text" class="form-control tenantGroup" autocomplete="off" placeholder="Tenant Name"></td>\n                    <td class="customDomain"><input type="text" class="form-control" autocomplete="off" placeholder="Custom Domain"></td>\n                  </tr>';
         return html;
       }
       function createBaseTable() {
-        var html = '<table class="table" id="baseTable">\n                      <thead>\n                        <tr>\n                          <th>Site / App Name</th>\n                          <th>Readiness (%) </th>\n                          <th>SPN</th>\n                          <th>Connector Group</th>\n                          <th>Tenant Name</th>\n                        </tr>\n                      </thead>\n                      <tbody></tbody></table>';
+        var html = '<table class="table" id="baseTable">\n                      <thead>\n                        <tr>\n                          <th>Site / App Name</th>\n                          <th>Readiness (%) </th>\n                          <th>SPN</th>\n                          <th>Connector Group</th>\n                          <th>Tenant Name</th>\n                          <th>Custom Domain (optional)</th>\n                        </tr>\n                      </thead>\n                      <tbody></tbody></table>';
         return html;
       }
       $('#selectionContainer').append(createBaseTable());
@@ -116,12 +126,14 @@ var AutoPublish = function () {
     key: 'generatePublishScript',
     value: function generatePublishScript() {
       var that = this;
+      that.customDomainChecked = false;
       function pullDataFromRow(row) {
         var dataBlob = {
           siteName: $(row).find('td.siteName').text(),
           chosenSpn: $(row).find('td.chosenSpn').find('.dropdown-toggle').text().trim(),
           connectorGroup: $(row).find('td.connectorCol input').val(),
           tenantName: $(row).find('td.tenantName input').val(),
+          customDomain: $(row).find('td.customDomain input').val(),
           internalUrl: $(row).attr('data-internalUrl'),
           hostName: $(row).attr('data-hostName'),
           itemType: $(row).attr('data-type')
@@ -133,11 +145,25 @@ var AutoPublish = function () {
         }
         return dataBlob;
       }
+      function buildExternalUrl(blob) {
+        var domain = void 0,
+            externalUrl = void 0;
+        if (blob.customDomain === "") {
+          domain = 'msappproxy.net';
+          externalUrl = 'https://' + blob.hostName + '-' + blob.tenantName + '.' + domain + '/';
+        } else {
+          that.customDomainChecked = true;
+          domain = blob.customDomain;
+          externalUrl = 'https://' + blob.hostName + '.' + domain + '/';
+        }
+        return externalUrl;
+      }
       function buildPsScript(dataBlobs) {
         var psScript = 'Connect-AzureAd',
             upNextBlob = '';
         dataBlobs.forEach(function (blob, blobIndex) {
-          var externalUrl = 'https://' + blob.hostName + '-' + blob.tenantName + '.msappproxy.net/';
+
+          var externalUrl = buildExternalUrl(blob);
           if (blob.type === 'app') {
             var pathDirs = blob.siteName.split('/');
             pathDirs.splice(0, 1);
@@ -249,12 +275,16 @@ var AutoPublish = function () {
         document.body.removeChild(element);
       }
       function spawnModal(psScript) {
+        //This customDomainChecked attribute is only on psScriptGeneration
         var html = '<pre><code> ' + psScript + ' </code></pre>';
         $('#modal-psScript').html('');
         $('#modal-psScript').append(html);
         $('#modal-psScript pre code').toArray().forEach(function (block) {
           hljs.highlightBlock(block);
         });
+        if (that.customDomainChecked) {
+          $('#modal-psScript').prepend('<p>**The certificate for the custom domain(s) should have already been uploaded to Azure AD </p>');
+        }
         //reset clipboard
         $('#copyClipboard').html('<i class="fas fa-clipboard clipboard"></i>');
         $('#publishModal').modal({});
@@ -295,11 +325,23 @@ var AutoPublish = function () {
       });
 
       $('.clickable-row').on('click', function (el) {
-        var clickedRow = $(el.target).closest('.clickable-row');
-        if (clickedRow.hasClass('siteRow')) {
-          toggleSiteRow(clickedRow);
+        if (!$(el.target).is('input') && !$(el.target).is('button') && !$(el.target).is('a')) {
+          var clickedRow = $(el.target).closest('.clickable-row');
+          if (clickedRow.hasClass('siteRow')) {
+            toggleSiteRow(clickedRow);
+          } else {
+            toggleAppRow(clickedRow);
+          }
+        }
+      });
+      $('.customDomain').on('keyup', function (el) {
+        var customDomain = $(el.target).val(),
+            $row = $(el.target).closest('.clickable-row');
+        if (customDomain.length > 0) {
+          //There is a custom domain so disable the tenant name
+          $row.find('.tenantName input').attr('disabled', true);
         } else {
-          toggleAppRow(clickedRow);
+          $row.find('.tenantName input').attr('disabled', false);
         }
       });
 

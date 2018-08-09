@@ -4,7 +4,7 @@ class AutoPublish {
     this.analysis = analysisResults;
     console.log(this.analysis);
     this.initView();
-
+    this.customDomainChecked = false;
   }
 
 
@@ -63,9 +63,19 @@ class AutoPublish {
                     <td class="chosenSpn">${buildSpnDropdown(analyzedSite.site.appPool.spns)}</td>
                     <td class="connectorCol"><input type="text" class="form-control connectorGroup" autocomplete="off" placeholder="Connector Group"></td>
                     <td class="tenantName"><input type="text" class="form-control tenantGroup" autocomplete="off" placeholder="Tenant Name"></td>
+                    <td class="customDomain"><input type="text" class="form-control" autocomplete="off" placeholder="Custom Domain"></td>
                   </tr>`
       return html;
     }
+    // function buildCheckBox() {
+    //   let html = `<div class="col">
+    //                 <div class="form-check" style="margin-top:5%">
+    //                   <input type="checkbox" class="form-check-input customDomain" >
+    //                   <label class="form-check-label" for="customDomain">Custom Domain</label>
+    //               </div>
+    //               </div>`;
+    //   return html;
+    // }
     function createAppRow( app, siteName, internalUrl, childId, parentId, bindings ) {
       let readinessScore = app.readinessScore.toPrecision(3),
           readinessText = readinessScore,
@@ -90,6 +100,7 @@ class AutoPublish {
                     <td class="chosenSpn">${buildSpnDropdown(app.app.appPool.spns)}</td>
                     <td class="connectorCol"><input type="text" class="form-control connectorGroup" autocomplete="off" placeholder="Connector Group"></td>
                     <td class="tenantName"><input type="text" class="form-control tenantGroup" autocomplete="off" placeholder="Tenant Name"></td>
+                    <td class="customDomain"><input type="text" class="form-control" autocomplete="off" placeholder="Custom Domain"></td>
                   </tr>`
       return html;
     }
@@ -102,6 +113,7 @@ class AutoPublish {
                           <th>SPN</th>
                           <th>Connector Group</th>
                           <th>Tenant Name</th>
+                          <th>Custom Domain (optional)</th>
                         </tr>
                       </thead>
                       <tbody></tbody></table>`;
@@ -139,12 +151,14 @@ class AutoPublish {
 
   generatePublishScript() {
     let that = this;
+    that.customDomainChecked = false;
     function pullDataFromRow(row) {
       let dataBlob = {
         siteName : $(row).find('td.siteName').text(),
         chosenSpn : $(row).find('td.chosenSpn').find('.dropdown-toggle').text().trim(),
         connectorGroup : $(row).find('td.connectorCol input').val(),
         tenantName : $(row).find('td.tenantName input').val(),
+        customDomain : $(row).find('td.customDomain input').val(),
         internalUrl : $(row).attr('data-internalUrl'),
         hostName : $(row).attr('data-hostName'),
         itemType : $(row).attr('data-type')
@@ -154,11 +168,24 @@ class AutoPublish {
       } else { dataBlob.type = 'app'; }
       return dataBlob;
     }
+    function buildExternalUrl( blob ) {
+      let domain, externalUrl;
+      if ( blob.customDomain === "") {
+        domain = 'msappproxy.net';
+        externalUrl = `https://${blob.hostName}-${blob.tenantName}.${domain}/`;
+      } else {
+        that.customDomainChecked = true;
+        domain = blob.customDomain;
+        externalUrl = `https://${blob.hostName}.${domain}/`;
+      }
+      return externalUrl;
+    }
     function buildPsScript( dataBlobs ) {
       let psScript = `Connect-AzureAd`,
           upNextBlob = '';
       dataBlobs.forEach( (blob, blobIndex) => {
-        let externalUrl = `https://${blob.hostName}-${blob.tenantName}.msappproxy.net/`;
+
+        let externalUrl = buildExternalUrl( blob );
         if ( blob.type === 'app' ) {
           let pathDirs = blob.siteName.split('/');
           pathDirs.splice(0,1);
@@ -266,6 +293,7 @@ class AutoPublish {
       document.body.removeChild(element);
     }
     function spawnModal( psScript) {
+      //This customDomainChecked attribute is only on psScriptGeneration
       let html = `<pre><code> ${psScript} </code></pre>`;
       $('#modal-psScript').html('');
       $('#modal-psScript').append(html)
@@ -274,6 +302,9 @@ class AutoPublish {
       .forEach( (block) => {
       	hljs.highlightBlock(block);
       })
+      if ( that.customDomainChecked ) {
+        $('#modal-psScript').prepend('<p>**The certificate for the custom domain(s) should have already been uploaded to Azure AD </p>')
+      }
       //reset clipboard
       $('#copyClipboard').html('<i class="fas fa-clipboard clipboard"></i>')
       $('#publishModal').modal({})
@@ -315,9 +346,21 @@ class AutoPublish {
     })
 
     $('.clickable-row').on('click', (el) => {
-      let clickedRow = $(el.target).closest('.clickable-row');
-      if ( clickedRow.hasClass('siteRow') ) { toggleSiteRow(clickedRow) }
-      else { toggleAppRow(clickedRow) }
+      if ( !$(el.target).is('input') &&  !$(el.target).is('button') &&  !$(el.target).is('a') ) {
+        let clickedRow = $(el.target).closest('.clickable-row');
+        if ( clickedRow.hasClass('siteRow') ) { toggleSiteRow(clickedRow) }
+        else { toggleAppRow(clickedRow) }
+      }
+    })
+    $('.customDomain').on('keyup', (el) => {
+      let customDomain = $(el.target).val(),
+          $row = $(el.target).closest('.clickable-row')
+      if ( customDomain.length > 0 ) {
+        //There is a custom domain so disable the tenant name
+        $row.find('.tenantName input').attr('disabled', true)
+      } else {
+        $row.find('.tenantName input').attr('disabled', false)
+      }
     })
 
     $('#publishBtn').on('click', () => {
