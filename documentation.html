@@ -92,6 +92,7 @@
                                             <li>IIS server 2008+</li>
                                             <li>PowerShell v4</li>
                                             <li>IE / Edge / Chrome</li>
+                                            <li>Internet connection is only needed if the server name hosting the connector service is passed AND the Windows Feature RSAT-AD has not been installed OR if using the auto publish feature in which case you must connect to Azure AD</li>
                                           </ul>
                                     </div>
                                   </div>
@@ -184,22 +185,39 @@
                             <section id="installation-section" class="doc-section">
                                 <h2 class="section-title">Technical Details</h2>
                                 <div id="step31"  class="section-block">
-                                    <h3 class="block-title">Decision Tree</h3>
+                                    <h3 class="block-title">Directory Summaries</h3>
                                     <p>
-                                      Once the checks have been finalized this will contain a visualization of how the analysis is performed
+                                      Here is a quick summary on the function of each directory
                                     </p>
+                                    <ul class="list">
+                                      <li>src/ - These are the main js scripts that are used to run the analysis, and control the views. They are transpiled with babel into main.js which is the stored in the dist directory</li>
+                                      <li>dist/ - This directory contains a polyfill script for IE support, along with the transpiled scr/* directory</li>
+                                      <li>lib/ - All resources are stored in this directory</li>
+                                    </ul>
                                 </div><!--//section-block-->
                                 <div id="step2"  class="section-block">
-                                    <h3 class="block-title">In Development</h3>
+                                    <h3 class="block-title">File Summaries</h3>
                                     <p>
-                                      The auto generation feature has just been added, though it should theoretically be able to validate the input by querying Azure AD after authentication.
+                                      This is more indepth summary of the scripts found in the src/ directory
                                     </p>
+                                    <ul class="list">
+                                      <li>autoPublish.js - Controls the autoPub.html view. It includes the functions for building this view and for generating the PowerShell script used to auto publish the selected apps</li>
+                                      <li>configApi.js - A helper script that is intended to help abstract away some of the work in the analysis scripts. Currently there is just an iis analysis so this script serves a limited purpose</li>
+                                      <li>headless.js - Controls the headless.html view. It allows the user to upload the json where it then processes the data identically to if the user had instead went the normal route of letting the PowerShell script inject the data</li>
+                                      <li>iisAnalysis.js - Runs the analysis by performing a series of rule based checks depending on the received configuration data.</li>
+                                      <li>
+                                        main.js - The top level script that decides which set of controls should be used based on the url.
+                                      </li>
+                                      <li>
+                                        viewBuilder.js - Controls all of the rendering of html for most of the views.
+                                      </li>
+                                    </ul>
                                 </div>
 
                                 <div id="step3"  class="section-block">
                                     <h3 class="block-title">What's Next</h3>
                                     <p>
-                                      Currently this tool has not been tested outside of lab environments, the idea is that after trial runs additional improvements should be made.
+                                      This tool is currently going through testing in the wild in order to discover unknown bugs and find areas of improvement.
                                     </p>
                                 </div><!--//section-block-->
                             </section><!--//doc-section-->

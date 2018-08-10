@@ -171,10 +171,10 @@ var AutoPublish = function () {
           }
 
           if (blob.itemType === 'forms') {
-            upNextBlob += 'Write-Host "Site ' + blob.siteName + ' has been published! -> ' + externalUrl + ' check it out and begin adding groups / users who can access the application!" -ForegroundColor Green';
+            upNextBlob += 'Write-Host "Site ' + blob.siteName + ' has been published! -> ' + externalUrl + ' check it out and begin adding groups / users who can access the application!" -ForegroundColor Green \n';
             psScript += '\n          Write-Host "Publishing ' + blob.siteName + '" -ForegroundColor Green\n          $connectorGroup_' + blobIndex + ' = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "' + blob.connectorGroup + '"}\n          New-AzureADApplicationProxyApplication -DisplayName "' + blob.siteName + '" -InternalUrl "' + blob.internalUrl + '" -ConnectorGroupId $connectorGroup_' + blobIndex + '.id -ExternalUrl "' + externalUrl + '" -ExternalAuthenticationType Passthru';
           } else {
-            upNextBlob += 'Write-Host "Site ' + blob.siteName + ' has been published! -> ' + externalUrl + ' check it out and begin adding groups / users who can access the application!" -ForegroundColor Green';
+            upNextBlob += 'Write-Host "Site ' + blob.siteName + ' has been published! -> ' + externalUrl + ' check it out and begin adding groups / users who can access the application!" -ForegroundColor Green \n';
             psScript += '\n          Write-Host "Publishing ' + blob.siteName + '" -ForegroundColor Green\n          $connectorGroup_' + blobIndex + ' = Get-AzureADApplicationProxyConnectorGroup |  where-object {$_.name -eq "' + blob.connectorGroup + '"}\n          New-AzureADApplicationProxyApplication -DisplayName "' + blob.siteName + '" -InternalUrl "' + blob.internalUrl + '" -ConnectorGroupId $connectorGroup_' + blobIndex + '.id -ExternalUrl "' + externalUrl + '" -ExternalAuthenticationType AadPreAuthentication\n          $AppProxyApp_' + blobIndex + '=Get-AzureADApplication  | where-object {$_.Displayname -eq "' + blob.siteName + '"}\n          Set-AzureADApplicationProxyApplicationSingleSignOn -ObjectId $AppProxyApp_' + blobIndex + '.Objectid -SingleSignOnMode OnPremisesKerberos -KerberosInternalApplicationServicePrincipalName ' + blob.chosenSpn + ' -KerberosDelegatedLoginIdentity OnPremisesUserPrincipalName\n          ';
           }
           psScript += '\n';
